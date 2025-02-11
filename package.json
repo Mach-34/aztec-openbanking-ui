@@ -1,0 +1,41 @@
+{
+  "name": "aztec-openbaking-demo-ui",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "lint": "eslint .",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@aztec/accounts": "=0.75.0",
+    "@aztec/aztec.js": "=0.75.0",
+    "@aztec/noir-contracts.js": "=0.75.0",
+    "@openbanking.nr/js-inputs": "../openbank-circuit/js",
+    "@tailwindcss/vite": "^4.0.6",
+    "@types/react-modal": "^3.16.3",
+    "lucide-react": "^0.475.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-modal": "^3.16.3",
+    "react-toastify": "^11.0.3",
+    "tailwindcss": "^4.0.6",
+    "vite-plugin-node-polyfills": "^0.23.0",
+    "vite-plugin-top-level-await": "^1.4.4"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.19.0",
+    "@types/react": "^19.0.8",
+    "@types/react-dom": "^19.0.3",
+    "@vitejs/plugin-react": "^4.3.4",
+    "eslint": "^9.19.0",
+    "eslint-plugin-react-hooks": "^5.0.0",
+    "eslint-plugin-react-refresh": "^0.4.18",
+    "globals": "^15.14.0",
+    "typescript": "~5.7.2",
+    "typescript-eslint": "^8.22.0",
+    "vite": "^6.1.0"
+  }
+}
