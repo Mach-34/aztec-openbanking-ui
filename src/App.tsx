@@ -163,10 +163,22 @@ function App() {
         .send()
         .wait();
 
+      // update token balance
       setTokenBalance((prev) => ({
         ...prev,
         private: prev.private - depositAmount,
       }));
+
+      // update positions
+      setPositions([
+        {
+          balance: depositAmount,
+          currency: 'GBP',
+          withdrawable_at: 0n,
+          withdrawable_balance: 0n,
+        },
+      ]);
+
       toast.success('Succesfully initialized provider balance');
     } catch (err) {
       console.log('Error: ', err);
