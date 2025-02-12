@@ -3,7 +3,7 @@ import Modal, { ModalProps } from './Modal';
 import Input from './Input';
 
 type WithdrawModalProps = {
-  onFinish: (amount: number) => Promise<void>;
+  onFinish: (amount: bigint) => Promise<void>;
 } & Omit<ModalProps, 'children' | 'title'>;
 
 export default function WithdrawModal({
@@ -16,7 +16,7 @@ export default function WithdrawModal({
 
   const onWithdraw = async () => {
     setWithdrawing(true);
-    await onFinish(Number(amount));
+    await onFinish(BigInt(amount));
     setWithdrawing(false);
     onClose();
   };

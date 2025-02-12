@@ -1,18 +1,39 @@
+import { useState } from 'react';
 import Loader from './Loader';
 import Modal, { ModalProps } from './Modal';
+import PaymentChecklist from './PaymentChecklist';
 
-type PaymentModalProps = {} & Omit<ModalProps, 'children' | 'title'>;
+type PaymentModalProps = { onFinish: () => Promise<void> } & Omit<
+  ModalProps,
+  'children' | 'title'
+>;
 
 export default function PaymentModal({
   onClose,
+  onFinish,
   open,
 }: PaymentModalProps): JSX.Element {
+  const [makingPayment, setMakingPayment] = useState<boolean>(false);
+
+  const onPaymentflow = async () => {
+    setMakingPayment(true);
+    await onFinish();
+    setMakingPayment(false);
+  };
+
   return (
-    <Modal onClose={onClose} open={open} title='Payment initiated'>
-      <div className='text-bold text-2xl'>Initiating Revolut Payment</div>
-      <div className='flex justify-center pb-4 mt-10'>
-        <Loader color='#913DE5' size={40} />
-      </div>
+    <Modal
+      action={{
+        loading: makingPayment,
+        onClick: () => onPaymentflow(),
+        text: 'Authorize Revolut',
+      }}
+      height={80}
+      onClose={onClose}
+      open={open}
+      title='Payment initiated'
+    >
+      <PaymentChecklist currentStep={2} />
     </Modal>
   );
 }

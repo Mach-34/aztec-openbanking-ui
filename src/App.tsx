@@ -30,6 +30,8 @@ type OwnedPositions = {
   withdrawable_balance: bigint;
 };
 
+const { VITE_APP_SERVER_URL: SERVER_URL } = import.meta.env;
+
 function App() {
   const { escrowContract, setTokenBalance, tokenContract, wallet } = useAztec();
   // const [orders, setOrders] = useState([]);
@@ -54,7 +56,66 @@ function App() {
   }, [positions]);
 
   const claim = async () => {
-    if (!escrowContract || !wallet) return;
+    const POPUP_HEIGHT = 600;
+    const POPUP_WIDTH = 600;
+    const screenWidth = window.screen.width;
+    const screenHeight = window.screen.height;
+
+    // calculate position
+    const left = (screenWidth - POPUP_WIDTH) / 2;
+    const top = (screenHeight - POPUP_HEIGHT) / 2;
+
+    // if (!escrowContract || !wallet) return;
+
+    const paymentData = {
+      Data: {
+        Initiation: {
+          InstructionIdentification: 'ID412',
+          EndToEndIdentification: 'E2E123',
+          InstructedAmount: {
+            Amount: '2.50',
+            Currency: 'GBP',
+          },
+          CreditorAccount: {
+            SchemeName: 'UK.OBIE.SortCodeAccountNumber',
+            Identification: '11223321325698',
+            Name: 'Receiver Co.',
+          },
+          RemittanceInformation: {
+            Unstructured: 'Shipment fee',
+          },
+        },
+      },
+      Risk: {
+        PaymentContextCode: 'EcommerceGoods',
+        MerchantCategoryCode: '5967',
+        MerchantCustomerIdentification: '1238808123123',
+        DeliveryAddress: {
+          AddressLine: ['7'],
+          StreetName: 'Apple Street',
+          BuildingNumber: '1',
+          PostCode: 'E2 7AA',
+          TownName: 'London',
+          Country: 'UK',
+        },
+      },
+    };
+
+    // get auth url
+    const res = await fetch(`${SERVER_URL}/api/initialize-payment`, {
+      body: JSON.stringify(paymentData),
+      headers: { 'content-type': 'application/json' },
+      method: 'POST',
+    });
+
+    const { authUrl } = await res.json();
+    console.log('Authorization url: ', authUrl);
+    window.open(
+      authUrl,
+      '_blank',
+      `width=${POPUP_WIDTH},height=${POPUP_HEIGHT},top=${top},left=${left}`
+    );
+
     // const signature =
     //   '3e42c30cab535ed5a20dcac4d405004b5098451c72a80b4460b4e3e9a4bc89f131fa6078c1f7de1d740bfd8216e0ea8b67e5d78eaa7897d02902d73c50d3d0e7bbeb4e1b4b6b4d0281bcfb0e029c44f3ea90363e4e1d7ec591e09fc2bdd832428396b054f4f89336df49c01a88bb7e5b5015e706cd179467bf9794a79474884e799fb388050a7fdcaa074225bdc1b856048640e4fb7955a06675649acd89b049b603c0dc32dc5f37796453602f36cc982f86257055162457db6aec9377e7e9fdcb31e4ebce5d6e445c722f0e6a20936bda5c83481b12013078c0cc72551373586dc69db541d729b8d02521a26bb4f42068764438443e9c9164dca039b0fb1176';
     // const payloadFetch = await fetch('/data/revolut_payload.txt');
@@ -186,6 +247,14 @@ function App() {
     }
   };
 
+  const getCommitments = async () => {
+    const res = await fetch(
+      'https://9ca5-80-87-23-81.ngrok-free.app/commitments'
+    );
+    const data = await res.text();
+    console.log('Data: ', data);
+  };
+
   const getEscrowLiquidityPositions = useCallback(async () => {
     if (!escrowContract || !wallet) return;
     try {
@@ -217,40 +286,55 @@ function App() {
     }
   }, [escrowContract, wallet]);
 
-  const increaseBalance = async (amount: number) => {
-    if (!escrowContract || !wallet) return;
-    const amountBigInt = BigInt(amount);
-    const convertedDecimals = toUSDCDecimals(amountBigInt);
+  const increaseBalance = async (amount: bigint) => {
+    if (!escrowContract || !tokenContract || !wallet) return;
+    const convertedDecimals = toUSDCDecimals(amount);
     try {
+      const action = await tokenContract.methods
+        .transfer_to_public(
+          wallet.getAddress(),
+          escrowContract.address,
+          convertedDecimals,
+          0
+        )
+        .request();
+
+      const authWitness: IntentAction = {
+        caller: escrowContract.address,
+        action,
+      };
+
       await escrowContract
         .withAccount(wallet)
-        .methods.increment_escrow_balance(convertedDecimals)
+        .methods.increment_escrow_balance(convertedDecimals, {
+          authWitnesses: [authWitness],
+        })
         .send()
         .wait();
 
       // update token balances
       setTokenBalance((prev) => ({
         ...prev,
-        private: prev.private - amountBigInt,
+        private: prev.private - convertedDecimals,
       }));
 
       // update position balance
       setPositions((prev) => {
         const copy = [...prev];
-        copy[0].balance += amountBigInt;
+        copy[0] = { ...copy[0], balance: copy[0].balance + convertedDecimals };
         return copy;
       });
 
       toast.success(`Successfully incremented balance by ${amount} USDC`);
-    } catch {
+    } catch (err) {
+      console.log('Err: ', err);
       toast.error('Error occurred incrementing');
     }
   };
 
-  const withdraw = async (amount: number) => {
+  const withdraw = async (amount: bigint) => {
     if (!escrowContract || !wallet) return;
-    const amountBigInt = BigInt(amount);
-    const convertedDecimals = toUSDCDecimals(amountBigInt);
+    const convertedDecimals = toUSDCDecimals(amount);
     try {
       await escrowContract
         .withAccount(wallet)
@@ -261,13 +345,13 @@ function App() {
       // update token balances
       setTokenBalance((prev) => ({
         ...prev,
-        private: prev.private + amountBigInt,
+        private: prev.private + convertedDecimals,
       }));
 
       // update position balance
       setPositions((prev) => {
         const copy = [...prev];
-        copy[0].balance -= amountBigInt;
+        copy[0] = { ...copy[0], balance: copy[0].balance - convertedDecimals };
         return copy;
       });
 
@@ -282,6 +366,7 @@ function App() {
       if (!wallet) {
         setSelectedTab(TABS[1]);
       }
+      // getCommitments();
       getEscrowLiquidityPositions();
     })();
   }, [escrowContract, wallet]);
@@ -369,11 +454,12 @@ function App() {
       />
       <IncreaseBalanceModal
         onClose={() => setShowIncreaseBalanceModal(-1)}
-        onFinish={() => increaseBalance()}
+        onFinish={increaseBalance}
         open={showIncreaseBalanceModal > -1}
       />
       <PaymentModal
         onClose={() => setShowPaymentModal(-1)}
+        onFinish={claim}
         open={showPaymentModal > -1}
       />
       <WithdrawModal

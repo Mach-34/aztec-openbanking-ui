@@ -13,7 +13,7 @@
     "@aztec/accounts": "=0.75.0",
     "@aztec/aztec.js": "=0.75.0",
     "@aztec/noir-contracts.js": "=0.75.0",
-    "@shieldswap/wallet-sdk": "=0.75.0-obsidion.0",
+    "@shieldswap/wallet-sdk": "=0.75.0",
     "@openbanking.nr/js-inputs": "../openbank-circuit/js",
     "@tailwindcss/vite": "^4.0.6",
     "@types/react-modal": "^3.16.3",

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import Modal, { ModalProps } from './Modal';
 import Input from './Input';
 
-type IncreaseBalanceModalProps = { onFinish: () => void } & Omit<
+type IncreaseBalanceModalProps = { onFinish: (amount: bigint) => void } & Omit<
   ModalProps,
   'children' | 'title'
 >;
@@ -17,10 +17,7 @@ export default function IncreaseBalanceModal({
 
   const onIncreaseBalance = () => {
     setIncreasingBalance(true);
-    onFinish();
-    setTimeout(() => {
-      setIncreasingBalance(false);
-    }, 2500);
+    onFinish(BigInt(amount));
     onClose();
   };
 
