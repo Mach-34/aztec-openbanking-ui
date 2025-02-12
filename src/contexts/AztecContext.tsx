@@ -17,35 +17,34 @@ import {
   waitForPXE,
 } from '@aztec/aztec.js';
 import usePXEHealth from '../hooks/usePXEHealth';
-import {
-  AZTEC_WALLET_LS_KEY,
-  AZTEC_WALLETS,
-  DEFAULT_PXE_URL,
-} from '../utils/constants';
+import { AZTEC_WALLET_LS_KEY, DEFAULT_PXE_URL } from '../utils/constants';
 import { getSingleKeyAccount } from '@aztec/accounts/single_key';
-// import { PopupWalletSdk } from '@shieldswap/wallet-sdk';
-// import { Eip1193Account, Contract } from '@shieldswap/wallet-sdk/eip1193';
-import { OpenbankingEscrowContract } from '../artifacts/OpenbankingEscrow';
+import { PopupWalletSdk } from '@shieldswap/wallet-sdk';
+import { Contract, Eip1193Account } from '@shieldswap/wallet-sdk/eip1193';
+import {
+  OpenbankingEscrowContract,
+  OpenbankingEscrowContractArtifact,
+} from '../artifacts/OpenbankingEscrow';
 import {
   TokenContract,
-  // TokenContractArtifact,
+  TokenContractArtifact,
 } from '@aztec/noir-contracts.js/Token';
 import { toast } from 'react-toastify';
 
 type AztecContextProps = {
-  connectWallet: (wallet: AccountWalletWithSecretKey) => void;
+  connectWallet: () => void;
   connectToPXE: () => void;
   disconnectWallet: () => void;
-  escrowContract: OpenbankingEscrowContract | undefined;
+  escrowContract: Contract<OpenbankingEscrowContract> | undefined;
   fetchingTokenBalances: boolean;
   loadingContracts: boolean;
   pxe: PXE | null;
   setTokenBalance: Dispatch<SetStateAction<TokenBalance>>;
-  tokenAdmin: AccountWalletWithSecretKey | undefined;
+  tokenAdmin: Eip1193Account | undefined;
   tokenBalance: TokenBalance;
-  tokenContract: TokenContract | undefined;
+  tokenContract: Contract<TokenContract> | undefined;
   waitingForPXE: boolean;
-  wallet: AccountWalletWithSecretKey | undefined;
+  wallet: Eip1193Account | undefined;
   wallets: AccountWalletWithSecretKey[];
 };
 
@@ -71,8 +70,8 @@ const AztecContext = createContext<AztecContextProps>(
 );
 
 type OpenbankingDemoContracts = {
-  escrow: OpenbankingEscrowContract;
-  token: TokenContract;
+  escrow: Contract<OpenbankingEscrowContract>;
+  token: Contract<TokenContract>;
 };
 
 type TokenBalance = {
@@ -94,30 +93,26 @@ export const AztecProvider = ({ children }: { children: ReactNode }) => {
     useState<boolean>(false);
   const [loadingContracts, setLoadingContracts] = useState<boolean>(false);
   const [pxe, setPXE] = useState<PXE | null>(null);
-  const [tokenAdmin, setTokenAdmin] = useState<
-    AccountWalletWithSecretKey | undefined
-  >(undefined);
+  const [tokenAdmin, setTokenAdmin] = useState<Eip1193Account | undefined>(
+    undefined
+  );
   const [tokenBalance, setTokenBalance] = useState<TokenBalance>(
     DEFAULT_AZTEC_CONTEXT_PROPS.tokenBalance
   );
   const [waitingForPXE, setWaitingForPXE] = useState<boolean>(false);
-  const [wallet, setWallet] = useState<AccountWalletWithSecretKey | undefined>(
-    undefined
-  );
-  const [wallets, setWallets] = useState<AccountWalletWithSecretKey[]>([]);
+  const [wallet, setWallet] = useState<Eip1193Account | undefined>(undefined);
 
   // monitor PXE connection
   usePXEHealth(pxe, () => {
     setWallet(undefined);
-    setWallets([]);
     setPXE(null);
   });
 
-  // const connectWallet = async () => {
-  //   if (!pxe) return;
-  //   const wallet = new PopupWalletSdk(pxe);
-  //   setAccount(await wallet.connect());
-  // };
+  const connectWallet = async () => {
+    if (!pxe) return;
+    const shieldWallet = new PopupWalletSdk(pxe);
+    setWallet(await shieldWallet.connect());
+  };
 
   const connectToPXE = async () => {
     setWaitingForPXE(true);
@@ -127,18 +122,13 @@ export const AztecProvider = ({ children }: { children: ReactNode }) => {
     setWaitingForPXE(false);
   };
 
-  const connectWallet = (wallet: AccountWalletWithSecretKey) => {
-    setWallet(wallet);
-    localStorage.setItem(AZTEC_WALLET_LS_KEY, wallet.getAddress().toString());
-  };
-
   const disconnectWallet = async () => {
     setWallet(undefined);
     localStorage.removeItem(AZTEC_WALLET_LS_KEY);
   };
 
   const fetchTokenBalances = useCallback(
-    async (token: TokenContract) => {
+    async (token: Contract<TokenContract>) => {
       setFetchingTokenBalance(true);
       const publicBalance = await token.methods
         .balance_of_public(wallet!.getAddress())
@@ -149,8 +139,8 @@ export const AztecProvider = ({ children }: { children: ReactNode }) => {
         .simulate();
 
       setTokenBalance({
-        private: privateBalance,
-        public: publicBalance,
+        private: privateBalance as bigint,
+        public: publicBalance as bigint,
       });
       setFetchingTokenBalance(false);
     },
@@ -187,17 +177,21 @@ export const AztecProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const loadContractInstances = async (
-    tokenAdmin: AccountWalletWithSecretKey
-  ) => {
+  const loadContractInstances = async (tokenAdmin: Eip1193Account) => {
     if (ESCROW_CONTRACT_ADDRESS && TOKEN_CONTRACT_ADDRESS) {
+      const Token = Contract.fromAztec(TokenContract, TokenContractArtifact);
+      const Escrow = Contract.fromAztec(
+        OpenbankingEscrowContract,
+        OpenbankingEscrowContractArtifact
+      );
+
       try {
-        const token = await TokenContract.at(
+        const token = await Token.at(
           AztecAddress.fromString(TOKEN_CONTRACT_ADDRESS),
           tokenAdmin
         );
 
-        const escrow = await OpenbankingEscrowContract.at(
+        const escrow = await Escrow.at(
           AztecAddress.fromString(ESCROW_CONTRACT_ADDRESS),
           tokenAdmin
         );
@@ -221,29 +215,16 @@ export const AztecProvider = ({ children }: { children: ReactNode }) => {
         Fr.fromHexString(ADMIN_SECRET_KEY),
         0
       );
-      const tokenAdminWallet = await tokenAdmin.waitSetup();
+      const tokenAdminWallet = Eip1193Account.fromAztec(
+        await tokenAdmin.waitSetup()
+      );
       await loadContractInstances(tokenAdminWallet);
 
-      // load in wallets
-      const resolvedWallets = [];
-      for (const secretKey of AZTEC_WALLETS) {
-        const account = await getSingleKeyAccount(
-          pxe,
-          Fr.fromHexString(secretKey),
-          0
-        );
-        resolvedWallets.push(await account.waitSetup());
-      }
-
-      const sessionAddress = localStorage.getItem(AZTEC_WALLET_LS_KEY);
-      const acc = sessionAddress
-        ? resolvedWallets.find((wallet: AccountWalletWithSecretKey) =>
-            wallet.getAddress().equals(AztecAddress.fromString(sessionAddress))
-          )
-        : undefined;
+      // const shieldWallet = new PopupWalletSdk(pxe);
+      // const storedWallet = shieldWallet.getAccount();
+      // console.log('Stored wallet: ', storedWallet);
+      // setWallet(storedWallet);
       setTokenAdmin(tokenAdminWallet);
-      setWallet(acc);
-      setWallets(resolvedWallets);
     })();
   }, [pxe]);
 
@@ -275,7 +256,7 @@ export const AztecProvider = ({ children }: { children: ReactNode }) => {
         tokenContract: contracts?.token,
         waitingForPXE,
         wallet,
-        wallets,
+        wallets: [],
       }}
     >
       {children}

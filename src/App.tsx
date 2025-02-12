@@ -8,10 +8,12 @@ import { useAztec } from './contexts/AztecContext';
 import { Fr } from '@aztec/aztec.js';
 import { toUSDCDecimals } from './utils';
 import { generateAztecInputs } from '@openbanking.nr/js-inputs/dist/src/inputGen';
+import { IntentAction } from '@shieldswap/wallet-sdk/eip1193';
 Modal.setAppElement('#root');
 
 function App() {
-  const { escrowContract, setTokenBalance, tokenContract, wallet } = useAztec();
+  const { escrowContract, pxe, setTokenBalance, tokenContract, wallet } =
+    useAztec();
   const [orders, setOrders] = useState([]);
   const [showDepositModal, setShowDepositModal] = useState<boolean>(false);
 
@@ -70,20 +72,15 @@ function App() {
       redc_limbs
     );
 
-    console.log('Inputs: ', inputs);
-
     // claim tokens on Aztec
     await escrowContract
-      .withWallet(wallet)
+      .withAccount(wallet)
       // @ts-ignore
       .methods.prove_payment_and_claim(inputs)
       .send()
       .wait();
 
     toast.success('Successfully proved payment');
-
-    // const payload = await payloadFetch.text();
-    // console.log('Payload: ');
   };
 
   const depositFunds = async (
@@ -104,25 +101,28 @@ function App() {
       );
 
       // create authwit for escrow to transfer from user's private balance
-      const action = tokenContract.methods.transfer_to_public(
-        wallet.getAddress(),
-        escrowContract.address,
-        depositAmount,
-        0
-      );
+      const action = await tokenContract.methods
+        .transfer_to_public(
+          wallet.getAddress(),
+          escrowContract.address,
+          depositAmount,
+          0
+        )
+        .request();
 
-      await wallet.createAuthWit({
+      const authWitness: IntentAction = {
         caller: escrowContract.address,
         action,
-      });
+      };
 
       await escrowContract
-        .withWallet(wallet)
+        .withAccount(wallet)
         .methods.init_escrow_balance(
           sortcodeField,
           currencyCodeField,
           depositAmount,
-          Fr.random()
+          Fr.random(),
+          { authWitnesses: [authWitness] }
         )
         .send()
         .wait();

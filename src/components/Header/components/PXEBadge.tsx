@@ -34,6 +34,9 @@ export default function PXEBadge() {
           Reconnect
         </button>
       )}
+      {pxe && (
+        <div className='animate-pulse bg-green-500 rounded-full h-1.5 w-1.5' />
+      )}
     </div>
   );
 }

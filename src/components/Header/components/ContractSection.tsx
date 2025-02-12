@@ -17,7 +17,7 @@ export default function ContractSection() {
     );
   } else {
     return (
-      <div className='border border-black flex gap-4 items-center rounded px-2 py-1'>
+      <div className='border border-white flex gap-4 items-start rounded px-2 py-1'>
         <div>
           <div>
             <div className='flex gap-1 items-center'>
