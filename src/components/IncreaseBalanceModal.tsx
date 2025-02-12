@@ -1,0 +1,47 @@
+import { useState } from 'react';
+import Modal, { ModalProps } from './Modal';
+import Input from './Input';
+
+type IncreaseBalanceModalProps = { onFinish: () => void } & Omit<
+  ModalProps,
+  'children'
+>;
+
+export default function IncreaseBalanceModal({
+  onClose,
+  onFinish,
+  open,
+}: IncreaseBalanceModalProps): JSX.Element {
+  const [amount, setAmount] = useState('');
+  const [increasingBalance, setIncreasingBalance] = useState<boolean>(false);
+
+  const onIncreaseBalance = () => {
+    setIncreasingBalance(true);
+    onFinish();
+    setTimeout(() => {
+      setIncreasingBalance(false);
+    }, 2500);
+    onClose();
+  };
+
+  return (
+    <Modal
+      action={{
+        onClick: () => onIncreaseBalance(),
+        loading: increasingBalance,
+        text: increasingBalance ? 'Increasing balance...' : 'Increase balance',
+      }}
+      onClose={onClose}
+      open={open}
+      title='Increase Position Balance'
+    >
+      <Input
+        className='w-3/4'
+        onChange={(e) => setAmount(e.target.value)}
+        placeholder='amount...'
+        value={amount}
+        title='Deposit Amount'
+      />
+    </Modal>
+  );
+}

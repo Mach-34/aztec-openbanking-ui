@@ -1,8 +1,13 @@
 import { useState } from 'react';
 import Modal, { ModalProps } from './Modal';
+import Input from './Input';
 
 type DepositModalProps = {
-  onFinish: (sortCode: string, currencyCode: string, amount: number) => void;
+  onFinish: (
+    sortCode: string,
+    currencyCode: string,
+    amount: number
+  ) => Promise<void>;
 } & Omit<ModalProps, 'children'>;
 
 export default function DepositModal({
@@ -12,29 +17,51 @@ export default function DepositModal({
 }: DepositModalProps): JSX.Element {
   const [amount, setAmount] = useState('');
   const [currencyCode, setCurrencyCode] = useState('');
+  const [depositing, setDepositing] = useState<boolean>(false);
   const [sortCode, setSortCode] = useState('');
+
+  const onDeposit = async () => {
+    setDepositing(true);
+    await onFinish(sortCode, currencyCode, Number(amount));
+    setDepositing(false);
+    onClose();
+  };
+
   return (
-    <Modal bgColor='black' onClose={onClose} open={open}>
-      <div className='flex flex-col items-center gap-5 mb-10'>
-        <input
+    <Modal
+      action={{
+        onClick: () => onDeposit,
+        loading: depositing,
+        text: depositing ? 'Despositing...' : 'Deposit',
+      }}
+      height={65}
+      onClose={onClose}
+      open={open}
+      title='Create New Liquidity Position'
+    >
+      <div className='flex flex-col items-center gap-5 w-full'>
+        <Input
+          className='w-3/4'
           onChange={(e) => setSortCode(e.target.value)}
-          placeholder='Sort code'
+          placeholder='Enter sort code...'
           value={sortCode}
+          title='Sort Code'
         />
-        <input
+        <Input
+          className='w-3/4'
           onChange={(e) => setCurrencyCode(e.target.value)}
-          placeholder='Currency code'
+          placeholder='Enter currency code...'
           value={currencyCode}
+          title='Currency Code'
         />
-        <input
+        <Input
+          className='w-3/4'
           onChange={(e) => setAmount(e.target.value)}
-          placeholder='Amount'
+          placeholder='Enter amount...'
           value={amount}
+          title='Amount'
         />
       </div>
-      <button onClick={() => onFinish(sortCode, currencyCode, Number(amount))}>
-        Deposit
-      </button>
     </Modal>
   );
 }
