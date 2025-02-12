@@ -67,15 +67,15 @@ export default function TokenBalanceSection() {
             </div>
           ) : (
             <>
-              <div className='border border-black border-solid p-1 rounded'>
-                <div className='flex items-center gap-4'>
+              <div className='border border-white border-solid p-1 rounded'>
+                <div className='flex items-start gap-4'>
                   <div>
                     <div className='flex gap-1 items-center'>
                       <div>Balance</div>
                       <img alt='USDC' className='h-4 w-4' src={usdc} />
                     </div>
                     <button
-                      className='bg-green-600 flex gap-1 items-center rounded-full px-1 py-0.5 text-white text-[10px]'
+                      className='border border-[#00C950] bg-[rgba(0,201,80,.5)] flex gap-1 items-center px-1 py-0.5 rounded-full text-white text-[10px]'
                       onClick={() => mintUsdc()}
                     >
                       {minting ? 'Minting...' : 'Mint'}
