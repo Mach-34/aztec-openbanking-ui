@@ -1,7 +1,7 @@
 import Loader from './Loader';
 import Modal, { ModalProps } from './Modal';
 
-type PaymentModalProps = {} & Omit<ModalProps, 'children'>;
+type PaymentModalProps = {} & Omit<ModalProps, 'children' | 'title'>;
 
 export default function PaymentModal({
   onClose,

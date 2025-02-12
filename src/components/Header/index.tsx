@@ -55,11 +55,11 @@ export default function Header(): JSX.Element {
               {walletButtonText}
               {!!wallet && showMenu && (
                 <div
-                  className='absolute bg-zimburseGray left-0 rounded top-[calc(100%+12px)]'
+                  className='absolute bg-[#913DE5] left-0 rounded top-[calc(100%+12px)] w-full'
                   ref={menuRef}
                 >
                   <div
-                    className='cursor-pointer p-4 rounded hover:bg-[#A8A6A6]'
+                    className='cursor-pointer p-2 rounded hover:bg-[#A8A6A6] w-full'
                     onClick={() => disconnectWallet()}
                   >
                     Logout

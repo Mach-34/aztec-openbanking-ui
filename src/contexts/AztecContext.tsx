@@ -19,7 +19,7 @@ import {
 import usePXEHealth from '../hooks/usePXEHealth';
 import { AZTEC_WALLET_LS_KEY, DEFAULT_PXE_URL } from '../utils/constants';
 import { getSingleKeyAccount } from '@aztec/accounts/single_key';
-import { PopupWalletSdk } from '@shieldswap/wallet-sdk';
+import { ReownPopupWalletSdk, PopupWalletSdk } from '@shieldswap/wallet-sdk';
 import { Contract, Eip1193Account } from '@shieldswap/wallet-sdk/eip1193';
 import {
   OpenbankingEscrowContract,
@@ -83,6 +83,7 @@ const {
   VITE_APP_TOKEN_ADMIN_SECRET_KEY: ADMIN_SECRET_KEY,
   VITE_APP_ESCROW_CONTRACT_ADDRESS: ESCROW_CONTRACT_ADDRESS,
   VITE_APP_TOKEN_CONTRACT_ADDRESS: TOKEN_CONTRACT_ADDRESS,
+  VITE_APP_WALLET_CONNECT_ID: WALLET_CONNECT_ID,
 } = import.meta.env;
 
 export const AztecProvider = ({ children }: { children: ReactNode }) => {
@@ -110,7 +111,10 @@ export const AztecProvider = ({ children }: { children: ReactNode }) => {
 
   const connectWallet = async () => {
     if (!pxe) return;
-    const shieldWallet = new PopupWalletSdk(pxe);
+    const wcParams = {
+      projectId: WALLET_CONNECT_ID,
+    };
+    const shieldWallet = new ReownPopupWalletSdk(pxe, wcParams);
     setWallet(await shieldWallet.connect());
   };
 

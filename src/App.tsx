@@ -1,12 +1,12 @@
 import Header from './components/Header';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import Modal from 'react-modal';
 import DepositModal from './components/DepositModal';
 import { useAztec } from './contexts/AztecContext';
 import { Fr } from '@aztec/aztec.js';
-import { toUSDCDecimals } from './utils';
+import { formatUSDC, toUSDCDecimals } from './utils';
 import { generateAztecInputs } from '@openbanking.nr/js-inputs/dist/src/inputGen';
 import { IntentAction } from '@shieldswap/wallet-sdk/eip1193';
 import DataTable from './components/DataTable';
@@ -14,39 +14,44 @@ import PaymentModal from './components/PaymentModal';
 import { Plus } from 'lucide-react';
 import IncreaseBalanceModal from './components/IncreaseBalanceModal';
 import WithdrawModal from './components/WithdrawModal';
+import {
+  OPEN_POSITION_DATA,
+  OPEN_POSITION_HEADERS,
+  OWNED_POSITION_HEADERS,
+} from './utils/data';
 Modal.setAppElement('#root');
 
 const TABS = ['Your Positions', 'Open Orders'];
-const DATA = [
-  { user: 'John Doe', currency: 'GBP', balance: '$400.35' },
-  { user: 'User Z', currency: 'GBP', balance: '$100.0' },
-  { user: 'Billy', currency: 'USD', balance: '$1,300.0' },
-  { user: 'John Doe', currency: 'GBP', balance: '$400.35' },
-  { user: 'User Z', currency: 'GBP', balance: '$100.0' },
-  { user: 'Billy', currency: 'USD', balance: '$1,300.0' },
-  { user: 'John Doe', currency: 'GBP', balance: '$400.35' },
-  { user: 'User Z', currency: 'GBP', balance: '$100.0' },
-  { user: 'Billy', currency: 'USD', balance: '$1,300.0' },
-];
-const HEADERS = ['User', 'Currency', 'Balance'];
 
-const OWNED_POSITION_HEADERS = ['Currency', 'Balance'];
-const OWNED_POSITION_DATA = [
-  { currency: 'GBP', balance: '$400.35' },
-  { currency: 'GBP', balance: '$100.0' },
-  { currency: 'USD', balance: '$1,300.0' },
-];
+type OwnedPositions = {
+  balance: bigint;
+  currency: string;
+  withdrawable_at: bigint;
+  withdrawable_balance: bigint;
+};
 
 function App() {
-  const { escrowContract, pxe, setTokenBalance, tokenContract, wallet } =
-    useAztec();
-  const [orders, setOrders] = useState([]);
-  const [selectedTab, setSelectedTab] = useState<string>(TABS[0]);
+  const { escrowContract, setTokenBalance, tokenContract, wallet } = useAztec();
+  // const [orders, setOrders] = useState([]);
+  const [fetchingPositions, setFetchingTokenPositions] =
+    useState<boolean>(true);
+  const [positions, setPositions] = useState<OwnedPositions[]>([]);
+  const [selectedTab, setSelectedTab] = useState<string>(TABS[1]);
   const [showDepositModal, setShowDepositModal] = useState<boolean>(false);
   const [showIncreaseBalanceModal, setShowIncreaseBalanceModal] =
     useState<number>(-1);
   const [showPaymentModal, setShowPaymentModal] = useState<number>(-1);
   const [showWithdrawModal, setShowWithdrawModal] = useState<number>(-1);
+
+  // TODO: Set up table component to handle different data formats insteads of mapping through array
+  const formattedPositions = useMemo(() => {
+    return positions.map((position) => ({
+      balance: `$${formatUSDC(position.balance)}`,
+      currency: position.currency,
+      withdrawable_at: position.withdrawable_at.toString(),
+      withdrawable_balance: `$${formatUSDC(position.withdrawable_balance)}`,
+    }));
+  }, [positions]);
 
   const claim = async () => {
     if (!escrowContract || !wallet) return;
@@ -169,13 +174,105 @@ function App() {
     }
   };
 
-  const increaseBalance = () => {
-    // TODO
+  const getEscrowLiquidityPositions = useCallback(async () => {
+    if (!escrowContract || !wallet) return;
+    try {
+      const escrowOwnerNote = await escrowContract.methods
+        .get_escrow_owner_note(wallet.getAddress())
+        .simulate();
+      // @ts-ignore
+      const commitment: bigint = escrowOwnerNote.commitment;
+      const commitmentBalance = await escrowContract.methods
+        .get_escrow_liqudity_position(commitment)
+        .simulate();
+
+      // format position data for table
+      setPositions([
+        {
+          // @ts-ignore
+          balance: commitmentBalance.balance,
+          currency: 'GBP',
+          // @ts-ignore
+          withdrawable_at: commitmentBalance.withdrawable_at,
+          withdrawable_balance:
+            // @ts-ignore
+            commitmentBalance.withdrawable_balance,
+        },
+      ]);
+    } catch {
+    } finally {
+      setFetchingTokenPositions(false);
+    }
+  }, [escrowContract, wallet]);
+
+  const increaseBalance = async (amount: number) => {
+    if (!escrowContract || !wallet) return;
+    const amountBigInt = BigInt(amount);
+    const convertedDecimals = toUSDCDecimals(amountBigInt);
+    try {
+      await escrowContract
+        .withAccount(wallet)
+        .methods.increment_escrow_balance(convertedDecimals)
+        .send()
+        .wait();
+
+      // update token balances
+      setTokenBalance((prev) => ({
+        ...prev,
+        private: prev.private - amountBigInt,
+      }));
+
+      // update position balance
+      setPositions((prev) => {
+        const copy = [...prev];
+        copy[0].balance += amountBigInt;
+        return copy;
+      });
+
+      toast.success(`Successfully incremented balance by ${amount} USDC`);
+    } catch {
+      toast.error('Error occurred incrementing');
+    }
   };
 
-  const withdraw = () => {
-    // TODO
+  const withdraw = async (amount: number) => {
+    if (!escrowContract || !wallet) return;
+    const amountBigInt = BigInt(amount);
+    const convertedDecimals = toUSDCDecimals(amountBigInt);
+    try {
+      await escrowContract
+        .withAccount(wallet)
+        .methods.withdraw_escrow_balance(convertedDecimals)
+        .send()
+        .wait();
+
+      // update token balances
+      setTokenBalance((prev) => ({
+        ...prev,
+        private: prev.private + amountBigInt,
+      }));
+
+      // update position balance
+      setPositions((prev) => {
+        const copy = [...prev];
+        copy[0].balance -= amountBigInt;
+        return copy;
+      });
+
+      toast.success(`Successfully withdrew ${amount} USDC`);
+    } catch {
+      toast.error('Error occurred withdrawing funds');
+    }
   };
+
+  useEffect(() => {
+    (async () => {
+      if (!wallet) {
+        setSelectedTab(TABS[1]);
+      }
+      getEscrowLiquidityPositions();
+    })();
+  }, [escrowContract, wallet]);
 
   return (
     <>
@@ -183,47 +280,66 @@ function App() {
       <div className='h-[calc(100vh-40px)] mt-10 px-10'>
         <div className='flex items-center justify-between'>
           <div className='flex gap-2 text-lg'>
-            {TABS.map((tab: string) => (
-              <div
-                className='border border-[#913DE5] cursor-pointer px-2 py-1 rounded-lg text-lg'
-                onClick={() => setSelectedTab(tab)}
-                style={{
-                  backgroundColor:
-                    selectedTab === tab ? '#913DE5' : 'transparent',
-                  color: selectedTab === tab ? 'white' : '#913DE5',
-                }}
-              >
-                {tab}
-              </div>
-            ))}
+            {TABS.slice(wallet && !fetchingPositions ? 0 : 1).map(
+              (tab: string) => (
+                <div
+                  className='border border-[#913DE5] cursor-pointer px-2 py-1 rounded-lg text-lg'
+                  onClick={() => setSelectedTab(tab)}
+                  style={{
+                    backgroundColor:
+                      selectedTab === tab ? '#913DE5' : 'transparent',
+                    color: selectedTab === tab ? 'white' : '#913DE5',
+                  }}
+                >
+                  {tab}
+                </div>
+              )
+            )}
           </div>
-          <button
-            className='flex gap-2 items-center px-2 py-1'
-            onClick={() => setShowDepositModal(true)}
-          >
-            New Position <Plus size={20} />
-          </button>
+          {!fetchingPositions && wallet && (
+            <button
+              className='flex gap-2 items-center px-2 py-1'
+              onClick={() => setShowDepositModal(true)}
+            >
+              New Position <Plus size={20} />
+            </button>
+          )}
         </div>
         <div className='flex justify-center'>
           <div className='mt-6 w-[90%]'>
             {selectedTab === TABS[0] ? (
-              <DataTable
-                data={OWNED_POSITION_DATA}
-                headers={OWNED_POSITION_HEADERS}
-                primaryAction={{
-                  label: 'Increase',
-                  onClick: (rowIndex: number) =>
-                    setShowIncreaseBalanceModal(rowIndex),
-                }}
-                secondaryAction={{
-                  label: 'Withdraw',
-                  onClick: (rowIndex: number) => setShowWithdrawModal(rowIndex),
-                }}
-              />
+              positions.length ? (
+                <DataTable
+                  data={formattedPositions}
+                  headers={OWNED_POSITION_HEADERS}
+                  primaryAction={{
+                    label: 'Increase',
+                    onClick: (rowIndex: number) =>
+                      setShowIncreaseBalanceModal(rowIndex),
+                  }}
+                  secondaryAction={{
+                    label: 'Withdraw',
+                    onClick: (rowIndex: number) =>
+                      setShowWithdrawModal(rowIndex),
+                  }}
+                />
+              ) : (
+                <div className='flex flex-col items-center gap-4 justify-center mt-20'>
+                  <div className='text-2xl'>
+                    You do not currently have any open liquidity positions
+                  </div>
+                  <button
+                    className='flex gap-2 items-center px-2 py-1'
+                    onClick={() => setShowDepositModal(true)}
+                  >
+                    New Position <Plus size={20} />
+                  </button>
+                </div>
+              )
             ) : (
               <DataTable
-                data={DATA}
-                headers={HEADERS}
+                data={OPEN_POSITION_DATA}
+                headers={OPEN_POSITION_HEADERS}
                 primaryAction={{
                   label: 'Pay',
                   onClick: (rowIndex: number) => setShowPaymentModal(rowIndex),
@@ -250,7 +366,7 @@ function App() {
       />
       <WithdrawModal
         onClose={() => setShowWithdrawModal(-1)}
-        onFinish={() => withdraw()}
+        onFinish={withdraw}
         open={showWithdrawModal > -1}
       />
     </>

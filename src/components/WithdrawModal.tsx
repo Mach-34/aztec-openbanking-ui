@@ -2,10 +2,9 @@ import { useState } from 'react';
 import Modal, { ModalProps } from './Modal';
 import Input from './Input';
 
-type WithdrawModalProps = { onFinish: () => void } & Omit<
-  ModalProps,
-  'children'
->;
+type WithdrawModalProps = {
+  onFinish: (amount: number) => Promise<void>;
+} & Omit<ModalProps, 'children' | 'title'>;
 
 export default function WithdrawModal({
   onClose,
@@ -15,12 +14,10 @@ export default function WithdrawModal({
   const [amount, setAmount] = useState('');
   const [withdrawing, setWithdrawing] = useState<boolean>(false);
 
-  const onWithdraw = () => {
+  const onWithdraw = async () => {
     setWithdrawing(true);
-    onFinish();
-    setTimeout(() => {
-      setWithdrawing(false);
-    }, 2500);
+    await onFinish(Number(amount));
+    setWithdrawing(false);
     onClose();
   };
 

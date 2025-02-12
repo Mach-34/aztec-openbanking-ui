@@ -62,7 +62,11 @@ export default function Modal({
       <div className='flex flex-col items-center'>{children}</div>
       {action ? (
         <div className='flex justify-end mt-10'>
-          <Button onClick={() => action.onClick()} text={action.text} />
+          <Button
+            loading={action.loading}
+            onClick={() => action.onClick()}
+            text={action.text}
+          />
         </div>
       ) : (
         <div />

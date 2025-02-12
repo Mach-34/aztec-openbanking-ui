@@ -4,7 +4,7 @@ import Input from './Input';
 
 type IncreaseBalanceModalProps = { onFinish: () => void } & Omit<
   ModalProps,
-  'children'
+  'children' | 'title'
 >;
 
 export default function IncreaseBalanceModal({
@@ -38,7 +38,7 @@ export default function IncreaseBalanceModal({
       <Input
         className='w-3/4'
         onChange={(e) => setAmount(e.target.value)}
-        placeholder='amount...'
+        placeholder='Enter amount...'
         value={amount}
         title='Deposit Amount'
       />

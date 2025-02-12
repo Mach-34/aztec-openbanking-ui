@@ -75,3 +75,34 @@ h1 {
     background-color: #f9f9f9;
   }
 }
+
+/* Fade-in effect for the overlay */
+.ReactModal__Overlay {
+  opacity: 0;
+  transition: opacity 300ms ease-in-out;
+}
+
+.ReactModal__Overlay--after-open {
+  opacity: 1;
+}
+
+.ReactModal__Overlay--before-close {
+  opacity: 0;
+}
+
+/* Fade-in & slide-up from the bottom effect for the modal content */
+.ReactModal__Content {
+  transform: translateY(50px); /* Start position: Lower on the screen */
+  opacity: 0;
+  transition: opacity 300ms ease-in-out, transform 300ms ease-in-out;
+}
+
+.ReactModal__Content--after-open {
+  transform: translateY(0); /* Moves to its final position */
+  opacity: 1;
+}
+
+.ReactModal__Content--before-close {
+  transform: translateY(50px); /* Moves back down */
+  opacity: 0;
+}

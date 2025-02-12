@@ -8,7 +8,7 @@ type DepositModalProps = {
     currencyCode: string,
     amount: number
   ) => Promise<void>;
-} & Omit<ModalProps, 'children'>;
+} & Omit<ModalProps, 'children' | 'title'>;
 
 export default function DepositModal({
   onClose,
@@ -30,7 +30,7 @@ export default function DepositModal({
   return (
     <Modal
       action={{
-        onClick: () => onDeposit,
+        onClick: () => onDeposit(),
         loading: depositing,
         text: depositing ? 'Despositing...' : 'Deposit',
       }}
