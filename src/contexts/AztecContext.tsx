@@ -83,6 +83,7 @@ const {
   VITE_APP_TOKEN_ADMIN_SECRET_KEY: ADMIN_SECRET_KEY,
   VITE_APP_ESCROW_CONTRACT_ADDRESS: ESCROW_CONTRACT_ADDRESS,
   VITE_APP_TOKEN_CONTRACT_ADDRESS: TOKEN_CONTRACT_ADDRESS,
+  VITE_APP_WALLET_CONNECT_ID: WALLET_CONNECT_ID,
 } = import.meta.env;
 
 export const AztecProvider = ({ children }: { children: ReactNode }) => {
@@ -110,6 +111,10 @@ export const AztecProvider = ({ children }: { children: ReactNode }) => {
 
   const connectWallet = async () => {
     if (!pxe) return;
+    // const wcParams = {
+    //   projectId: WALLET_CONNECT_ID,
+    // };
+    // const shieldWallet = new ReownPopupWalletSdk(pxe, wcParams);
     const shieldWallet = new PopupWalletSdk(pxe);
     setWallet(await shieldWallet.connect());
   };
