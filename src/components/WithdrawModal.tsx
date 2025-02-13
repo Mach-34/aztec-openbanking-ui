@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Modal, { ModalProps } from './Modal';
 import Input from './Input';
 
@@ -25,6 +25,10 @@ export default function WithdrawModal({
     }
   };
 
+  useEffect(() => {
+    setAmount('');
+  }, [open]);
+
   return (
     <Modal
       action={{
@@ -38,10 +42,11 @@ export default function WithdrawModal({
     >
       <Input
         className='w-3/4'
-        onChange={(e) => setAmount(e.target.value)}
+        onChange={setAmount}
         placeholder='Enter amount...'
         value={amount}
         title='Withdraw Amount'
+        type='number'
       />
     </Modal>
   );

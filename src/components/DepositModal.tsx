@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Modal, { ModalProps } from './Modal';
 import Input from './Input';
 
@@ -31,6 +31,12 @@ export default function DepositModal({
     }
   };
 
+  useEffect(() => {
+    setAmount('');
+    setCurrencyCode('');
+    setSortCode('');
+  }, [open]);
+
   return (
     <Modal
       action={{
@@ -46,24 +52,25 @@ export default function DepositModal({
       <div className='flex flex-col items-center gap-5 w-full'>
         <Input
           className='w-3/4'
-          onChange={(e) => setSortCode(e.target.value)}
+          onChange={setSortCode}
           placeholder='Enter sort code...'
           value={sortCode}
           title='Sort Code'
         />
         <Input
           className='w-3/4'
-          onChange={(e) => setCurrencyCode(e.target.value)}
+          onChange={setCurrencyCode}
           placeholder='Enter currency code...'
           value={currencyCode}
           title='Currency Code'
         />
         <Input
           className='w-3/4'
-          onChange={(e) => setAmount(e.target.value)}
+          onChange={setAmount}
           placeholder='Enter amount...'
           value={amount}
           title='Amount'
+          type='number'
         />
       </div>
     </Modal>

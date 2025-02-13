@@ -24,7 +24,7 @@ import { Contract, Eip1193Account } from '@shieldswap/wallet-sdk/eip1193';
 import {
   OpenbankingEscrowContract,
   OpenbankingEscrowContractArtifact,
-} from '../artifacts/OpenbankingEscrow';
+} from '../artifacts';
 import {
   TokenContract,
   TokenContractArtifact,

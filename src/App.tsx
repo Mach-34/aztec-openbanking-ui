@@ -15,6 +15,8 @@ import { Plus } from 'lucide-react';
 import IncreaseBalanceModal from './components/IncreaseBalanceModal';
 import WithdrawModal from './components/WithdrawModal';
 import {
+  CreditorData,
+  CurrencyCode,
   OPEN_POSITION_DATA,
   OPEN_POSITION_HEADERS,
   OWNED_POSITION_HEADERS,
@@ -34,15 +36,17 @@ const { VITE_APP_SERVER_URL: SERVER_URL } = import.meta.env;
 
 function App() {
   const { escrowContract, setTokenBalance, tokenContract, wallet } = useAztec();
-  // const [orders, setOrders] = useState([]);
+  const [orders] = useState<Array<CreditorData>>(OPEN_POSITION_DATA);
   const [fetchingPositions, setFetchingTokenPositions] =
     useState<boolean>(true);
   const [positions, setPositions] = useState<OwnedPositions[]>([]);
+  const [selectedCreditor, setSelectedCreditor] = useState<CreditorData | null>(
+    null
+  );
   const [selectedTab, setSelectedTab] = useState<string>(TABS[1]);
   const [showDepositModal, setShowDepositModal] = useState<boolean>(false);
   const [showIncreaseBalanceModal, setShowIncreaseBalanceModal] =
     useState<number>(-1);
-  const [showPaymentModal, setShowPaymentModal] = useState<number>(-1);
   const [showWithdrawModal, setShowWithdrawModal] = useState<number>(-1);
 
   // TODO: Set up table component to handle different data formats insteads of mapping through array
@@ -55,7 +59,7 @@ function App() {
     }));
   }, [positions]);
 
-  const claim = async () => {
+  const claim = async (paymentData: any) => {
     const POPUP_HEIGHT = 600;
     const POPUP_WIDTH = 600;
     const screenWidth = window.screen.width;
@@ -66,40 +70,6 @@ function App() {
     const top = (screenHeight - POPUP_HEIGHT) / 2;
 
     // if (!escrowContract || !wallet) return;
-
-    const paymentData = {
-      Data: {
-        Initiation: {
-          InstructionIdentification: 'ID412',
-          EndToEndIdentification: 'E2E123',
-          InstructedAmount: {
-            Amount: '2.50',
-            Currency: 'GBP',
-          },
-          CreditorAccount: {
-            SchemeName: 'UK.OBIE.SortCodeAccountNumber',
-            Identification: '11223321325698',
-            Name: 'Receiver Co.',
-          },
-          RemittanceInformation: {
-            Unstructured: 'Shipment fee',
-          },
-        },
-      },
-      Risk: {
-        PaymentContextCode: 'EcommerceGoods',
-        MerchantCategoryCode: '5967',
-        MerchantCustomerIdentification: '1238808123123',
-        DeliveryAddress: {
-          AddressLine: ['7'],
-          StreetName: 'Apple Street',
-          BuildingNumber: '1',
-          PostCode: 'E2 7AA',
-          TownName: 'London',
-          Country: 'UK',
-        },
-      },
-    };
 
     // get auth url
     const res = await fetch(`${SERVER_URL}/api/initialize-payment`, {
@@ -275,7 +245,7 @@ function App() {
             {
               // @ts-ignore
               balance: commitmentBalance._value.balance,
-              currency: 'GBP',
+              currency: CurrencyCode.GBP,
               // @ts-ignore
               withdrawable_at: commitmentBalance._value.withdrawable_at,
               withdrawable_balance:
@@ -440,11 +410,12 @@ function App() {
               )
             ) : (
               <DataTable
-                data={OPEN_POSITION_DATA}
+                data={orders}
                 headers={OPEN_POSITION_HEADERS}
                 primaryAction={{
                   label: 'Pay',
-                  onClick: (rowIndex: number) => setShowPaymentModal(rowIndex),
+                  onClick: (rowIndex: number) =>
+                    setSelectedCreditor(orders[rowIndex]),
                 }}
               />
             )}
@@ -463,9 +434,10 @@ function App() {
         open={showIncreaseBalanceModal > -1}
       />
       <PaymentModal
-        onClose={() => setShowPaymentModal(-1)}
+        creditiorData={selectedCreditor}
+        onClose={() => setSelectedCreditor(null)}
         onFinish={claim}
-        open={showPaymentModal > -1}
+        open={!!selectedCreditor}
       />
       <WithdrawModal
         onClose={() => setShowWithdrawModal(-1)}

@@ -45,7 +45,7 @@
     tslib "^2.4.0"
     viem "2.22.8"
 
-"@aztec/bb.js@0.75.0", "@aztec/bb.js@=0.75.0":
+"@aztec/bb.js@0.75.0":
   version "0.75.0"
   resolved "https://registry.yarnpkg.com/@aztec/bb.js/-/bb.js-0.75.0.tgz#d2069e1cc3fb36ade9dfa79bcdb5ef59018f9347"
   integrity sha512-Kw61Hv75HLmT9pUo+ebKA6vj5Dnb+6ZNkECX6P05RcvmAZKO1hXW2hA+k5JVEVEv/VJf+G+Hjd1Z6ir66DyGCA==
@@ -1163,7 +1163,6 @@
   version "1.0.0"
   dependencies:
     "@aztec/accounts" "=0.75.0"
-    "@aztec/bb.js" "=0.75.0"
     "@aztec/noir-contracts.js" "=0.75.0"
     "@mach-34/noir-bignum-paramgen" "^1.1.2"
     "@noir-lang/noir_js" "=1.0.0-beta.1"
@@ -5014,9 +5013,9 @@ possible-typed-array-names@^1.0.0:
   integrity sha512-/+5VFTchJDoVj3bhoqi6UeymcD00DAwb1nJwamzPvHEszJ4FpF6SNNbUbOS8yI56qHzdV8eK0qEfOSiodkTdxg==
 
 postcss@^8.5.1:
-  version "8.5.1"
-  resolved "https://registry.yarnpkg.com/postcss/-/postcss-8.5.1.tgz#e2272a1f8a807fafa413218245630b5db10a3214"
-  integrity sha512-6oz2beyjc5VMn/KV1pPw8fliQkhBXrVn1Z3TVyqZxU8kZpzEKhBdmCFqI6ZbmGtamQvQGuU1sgPTk8ZrXDD7jQ==
+  version "8.5.2"
+  resolved "https://registry.yarnpkg.com/postcss/-/postcss-8.5.2.tgz#e7b99cb9d2ec3e8dd424002e7c16517cb2b846bd"
+  integrity sha512-MjOadfU3Ys9KYoX0AdkBlFEF1Vx37uCCeN4ZHnmwm9FfpbsGWMZeBLMmmpY+6Ocqod7mkdZ0DT31OlbsFrLlkA==
   dependencies:
     nanoid "^3.3.8"
     picocolors "^1.1.1"
