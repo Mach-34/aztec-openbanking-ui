@@ -19,7 +19,7 @@ import {
 import usePXEHealth from '../hooks/usePXEHealth';
 import { AZTEC_WALLET_LS_KEY, DEFAULT_PXE_URL } from '../utils/constants';
 import { getSingleKeyAccount } from '@aztec/accounts/single_key';
-import { PopupWalletSdk } from '@shieldswap/wallet-sdk';
+import { ReownPopupWalletSdk } from '@shieldswap/wallet-sdk';
 import { Contract, Eip1193Account } from '@shieldswap/wallet-sdk/eip1193';
 import {
   OpenbankingEscrowContract,
@@ -111,11 +111,10 @@ export const AztecProvider = ({ children }: { children: ReactNode }) => {
 
   const connectWallet = async () => {
     if (!pxe) return;
-    // const wcParams = {
-    //   projectId: WALLET_CONNECT_ID,
-    // };
-    // const shieldWallet = new ReownPopupWalletSdk(pxe, wcParams);
-    const shieldWallet = new PopupWalletSdk(pxe);
+    const wcParams = {
+      projectId: WALLET_CONNECT_ID,
+    };
+    const shieldWallet = new ReownPopupWalletSdk(pxe, wcParams);
     setWallet(await shieldWallet.connect());
   };
 
@@ -242,7 +241,7 @@ export const AztecProvider = ({ children }: { children: ReactNode }) => {
   }, [contracts, fetchTokenBalances, wallet]);
 
   useEffect(() => {
-    // connectToPXE();
+    connectToPXE();
   }, []);
 
   return (

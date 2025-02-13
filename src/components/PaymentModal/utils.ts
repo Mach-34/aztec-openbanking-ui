@@ -7,7 +7,7 @@ export const prepareOpenbankingPayment = (data: CreditorData, amount: string) =>
                 InstructionIdentification: "ID412",
                 EndToEndIdentification: "E2E123",
                 InstructedAmount: {
-                    Amount: "2.50",
+                    Amount: "5.00",
                     Currency: "GBP"
                 },
                 CreditorAccount: {

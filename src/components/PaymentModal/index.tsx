@@ -8,6 +8,9 @@ import Button from '../Button';
 import { decodeProtectedHeader } from 'jose';
 import { generateAztecInputs } from '@openbanking.nr/js-inputs';
 import forge from 'node-forge';
+import { useAztec } from '../../contexts/AztecContext';
+import { toast } from 'react-toastify';
+import { toUSDCDecimals } from '../../utils';
 
 type PaymentModalProps = {
   creditiorData: CreditorData | null;
@@ -22,8 +25,10 @@ export default function PaymentModal({
   open,
   message,
 }: PaymentModalProps): JSX.Element {
+  const { escrowContract, setTokenBalance, wallet } = useAztec();
   const [amount, setAmount] = useState('');
   const [aztecProofData, setAztecProofData] = useState<any>({});
+  const [claimingTokens, setClaimingTokens] = useState<boolean>(false);
   const [paymentFlowStep, setPaymentFlowStep] = useState<number>(-1);
   const popupRef = useRef<Window | null>(null);
 
@@ -55,98 +60,74 @@ export default function PaymentModal({
     );
   };
 
-  const prepareAztecProofData = (payload: any, signature: string) => {
-    console.log('Payload: ', payload);
-    console.log('signature: ', signature);
+  const claimTokens = async () => {
+    if (!aztecProofData || !escrowContract || !wallet) return;
+    setClaimingTokens(true);
+    try {
+      setPaymentFlowStep(4);
+
+      await escrowContract
+        .withAccount(wallet)
+        .methods.prove_payment_and_claim(aztecProofData)
+        .send()
+        .wait();
+
+      setTokenBalance((prev) => ({
+        ...prev,
+        private: prev.private + toUSDCDecimals(5n),
+      }));
+
+      toast.success('Successfully claimed tokens');
+      setTimeout(() => {
+        onClose();
+      }, 2500);
+    } catch (err) {
+      toast.error('Error claiming tokens');
+    } finally {
+      setClaimingTokens(false);
+    }
   };
 
-  function base64UrlToHex(base64Url: string) {
-    // Convert Base64 URL encoding to standard Base64
-    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-
-    // Decode Base64 to a Uint8Array
-    const binary = atob(base64);
-    const buffer = new Uint8Array(binary.length);
-
-    for (let i = 0; i < binary.length; i++) {
-      buffer[i] = binary.charCodeAt(i);
-    }
-
-    // Convert Uint8Array to hex
-    return Array.from(buffer)
-      .map((byte) => byte.toString(16).padStart(2, '0'))
-      .join('');
-  }
-
-  const parseSignature = async () => {
-    const data = {
-      Data: {
-        DomesticPaymentId: '67ae53ba-8104-a6ea-b1de-35d4e6adf52c',
-        Status: 'Pending',
-        StatusUpdateDateTime: '2025-02-13T20:19:06.562261Z',
-        CreationDateTime: '2025-02-13T20:19:06.562261Z',
-        ConsentId: '222796d3-5e1d-4ff5-83ea-8f8cc62ac09c',
-        Initiation: {
-          RemittanceInformation: { Unstructured: 'Shipment fee' },
-          DebtorAccount: {
-            SchemeName: 'UK.OBIE.SortCodeAccountNumber',
-            Identification: '04290940164373',
-            Name: 'Acme Corporation',
-          },
-          EndToEndIdentification: 'E2E123',
-          InstructionIdentification: 'ID412',
-          CreditorAccount: {
-            Name: 'Receiver Co.',
-            SchemeName: 'UK.OBIE.SortCodeAccountNumber',
-            Identification: '11223321325698',
-          },
-          InstructedAmount: { Amount: '2.50', Currency: 'GBP' },
-        },
-      },
-      Links: {
-        Self: 'https://sandbox-oba.revolut.com/domestic-payments/67ae53ba-8104-a6ea-b1de-35d4e6adf52c',
-      },
-      Meta: { TotalPages: 1 },
-    };
-
-    // get public key
-    const signature =
-      'eyJraWQiOiJvSjQwLUcxVklxbUU2eUhuYnA4S1E1Qmk2bXciLCJhbGciOiJQUzI1NiIsImNyaXQiOlsiYjY0IiwiaHR0cDovL29wZW5iYW5raW5nLm9yZy51ay9pYXQiLCJodHRwOi8vb3BlbmJhbmtpbmcub3JnLnVrL2lzcyIsImh0dHA6Ly9vcGVuYmFua2luZy5vcmcudWsvdGFuIl0sImh0dHA6Ly9vcGVuYmFua2luZy5vcmcudWsvaWF0IjoxNzM5NDc0NDQ5LCJiNjQiOmZhbHNlLCJodHRwOi8vb3BlbmJhbmtpbmcub3JnLnVrL3RhbiI6Im9wZW5iYW5raW5nLm9yZy51ayIsImh0dHA6Ly9vcGVuYmFua2luZy5vcmcudWsvaXNzIjoiMDAxNTgwMDAwMTAzVUF2QUFNIn0..SP4gvdKheTw7WAHd5Nuv3IUBtvdefLApen2AIlbt_IAsvWR4-5txwWvXTJvEpgqqCFIjL4CO0ThJNEwLC-5sDEq6dATUE_Wet7Z92GHEHjEgVHTLNpDLLxS4frFsaPtY4HnSVaXsCY6YF3gYq5LcN2LTONKpvJCteTOm1REQl9GFwuJjIw0GLz1VqO_bIx0r87Og0JgYIE_UdAkPyfkdtMC4yG2-IieFapm0Y1RnaKle39QTbe_BJB0sh9DehZzVdDCKeRg3eIgBlBLSrH33v9AxJC5G1mBLrhMi37blkHZhYrFth3EjwI8AIAZDJF3TPzlSGHtCnNE3Tdy3rmAC0g';
-    const decodedSignature = decodeProtectedHeader(signature);
-    const res = await fetch(`${SERVER_URL}/extract-public-key`, {
+  const prepareAztecProofData = async (payload: any, signature: string) => {
+    const res = await fetch(`${SERVER_URL}/noir-inputs`, {
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ signature }),
+      body: JSON.stringify({ rawPayload: JSON.stringify(payload), signature }),
       method: 'POST',
     });
-    const { publicKey } = await res.json();
-    const { modulus_limbs, redc_limbs } = publicKey;
-    // console.log('Modulus limbs: ', modulus_limbs);
-    let sigBuf = signature
-      .replace(/\+/g, '-')
-      .replace(/\//g, '_')
-      .replace(/=+$/, '');
-    console.log('sigs', signature);
-    // const signatureBuffer = Buffer.from(
-    //   signature.split('.')[2],
-    //   'base64url'
-    // ).toString('hex');
-    const encodedHeader = Buffer.from(JSON.stringify(decodedSignature))
-      .toString('base64')
-      .replace(/\+/g, '-')
-      .replace(/\//g, '_')
-      .replace(/=+$/, '');
-    const payload = `${encodedHeader}.${JSON.stringify(data)}`;
-    const contractInputs = generateAztecInputs(
-      payload,
-      base64UrlToHex(signature),
-      modulus_limbs,
-      redc_limbs
-    );
-    console.log('Contract inputs: ', contractInputs);
+    const { inputs } = await res.json();
+    const contractParams = {
+      modulus_limbs: inputs.modulus_limbs,
+      redc_limbs: inputs.redc_limbs,
+      signature_limbs: inputs.signature_limbs,
+      partial_hash_start: inputs.partial_hash_start,
+      header_delimiter_index: inputs.header_delimiter_index,
+      payload: inputs.payload.storage,
+      payload_length: inputs.payload.len,
+    };
+
+    setAztecProofData(contractParams);
   };
 
   const paymentFlowData = useMemo(() => {
-    if (paymentFlowStep === 0) {
+    if (paymentFlowStep >= 3) {
+      return {
+        action: () => claimTokens(),
+        loading: claimingTokens,
+        text: claimingTokens ? 'Claiming tokens' : 'Claim tokens on Aztec',
+      };
+    } else if (paymentFlowStep === 2) {
+      return {
+        action: () => null,
+        loading: true,
+        text: 'Confirming payment...',
+      };
+    } else if (paymentFlowStep === 1) {
+      return {
+        action: () => null,
+        loading: true,
+        text: 'Initiating Payment...',
+      };
+    } else if (paymentFlowStep === 0) {
       return {
         action: () => authRevolut(),
         loading: false,
@@ -158,15 +139,18 @@ export default function PaymentModal({
       loading: false,
       text: 'Begin Payment Flow',
     };
-  }, [paymentFlowStep]);
+  }, [claimingTokens, paymentFlowStep]);
 
   useEffect(() => {
     if (!message) return;
     const parsed = JSON.parse(message);
     if (parsed.message === 'Payment initiated') {
       const { jwsSignature, ...payload } = parsed.paymentResponse;
-      prepareAztecProofData(payload, parsed.jwsSignature);
+      prepareAztecProofData(payload, jwsSignature);
       setPaymentFlowStep(2);
+      setTimeout(() => {
+        setPaymentFlowStep(3);
+      }, 2500);
     } else if (parsed.message === 'Authorization successful') {
       // close popup
       if (popupRef.current && !popupRef.current.closed) {
@@ -178,16 +162,21 @@ export default function PaymentModal({
 
   useEffect(() => {
     setAmount('');
+    setClaimingTokens(false);
     setPaymentFlowStep(-1);
   }, [open]);
 
   return (
     <Modal
-      action={{
-        loading: paymentFlowData.loading,
-        onClick: () => amount && paymentFlowData.action(),
-        text: paymentFlowData.text,
-      }}
+      action={
+        paymentFlowStep <= 3
+          ? {
+              loading: paymentFlowData.loading,
+              onClick: () => amount && paymentFlowData.action(),
+              text: paymentFlowData.text,
+            }
+          : undefined
+      }
       height={paymentFlowStep > -1 ? 80 : 45}
       onClose={onClose}
       open={open}
@@ -228,7 +217,6 @@ export default function PaymentModal({
           </div>
         )}
       </div>
-      <Button onClick={() => parseSignature()} text='Parse Signature' />
     </Modal>
   );
 }
