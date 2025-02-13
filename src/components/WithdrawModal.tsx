@@ -16,9 +16,13 @@ export default function WithdrawModal({
 
   const onWithdraw = async () => {
     setWithdrawing(true);
-    await onFinish(BigInt(amount));
-    setWithdrawing(false);
-    onClose();
+    try {
+      await onFinish(BigInt(amount));
+      onClose();
+    } catch {
+    } finally {
+      setWithdrawing(false);
+    }
   };
 
   return (

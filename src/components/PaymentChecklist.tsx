@@ -1,13 +1,14 @@
 import { Check } from 'lucide-react';
-
-const steps = ['Planning', 'Design', 'Development', 'Testing', 'Deployment'];
+import Loader from './Loader';
 
 interface VerticalProgressChecklistProps {
   currentStep: number;
+  steps: string[];
 }
 
 export default function VerticalProgressChecklist({
   currentStep,
+  steps,
 }: VerticalProgressChecklistProps) {
   return (
     <div className='max-w-sm mx-auto p-6'>
@@ -17,12 +18,14 @@ export default function VerticalProgressChecklist({
             <div className='relative'>
               <div
                 className={`w-8 h-8 rounded-full border-4 flex items-center justify-center z-10 relative transition-colors ${
-                  index <= currentStep
+                  index === currentStep
+                    ? 'bg-[#242424] border-[#904FD1]'
+                    : index < currentStep
                     ? 'bg-[#904FD1] border-[#904FD1]'
                     : 'bg-white border-gray-300'
                 }`}
               >
-                {index <= currentStep && (
+                {index < currentStep && (
                   <Check className='w-5 h-5 text-white' />
                 )}
               </div>
@@ -46,6 +49,7 @@ export default function VerticalProgressChecklist({
                 {step}
               </span>
             </div>
+            {index === currentStep && <Loader size={16} />}
           </div>
         ))}
       </div>

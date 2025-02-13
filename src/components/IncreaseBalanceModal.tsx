@@ -2,10 +2,9 @@ import { useState } from 'react';
 import Modal, { ModalProps } from './Modal';
 import Input from './Input';
 
-type IncreaseBalanceModalProps = { onFinish: (amount: bigint) => void } & Omit<
-  ModalProps,
-  'children' | 'title'
->;
+type IncreaseBalanceModalProps = {
+  onFinish: (amount: bigint) => Promise<void>;
+} & Omit<ModalProps, 'children' | 'title'>;
 
 export default function IncreaseBalanceModal({
   onClose,
@@ -15,10 +14,15 @@ export default function IncreaseBalanceModal({
   const [amount, setAmount] = useState('');
   const [increasingBalance, setIncreasingBalance] = useState<boolean>(false);
 
-  const onIncreaseBalance = () => {
+  const onIncreaseBalance = async () => {
     setIncreasingBalance(true);
-    onFinish(BigInt(amount));
-    onClose();
+    try {
+      await onFinish(BigInt(amount));
+      onClose();
+    } catch {
+    } finally {
+      setIncreasingBalance(false);
+    }
   };
 
   return (

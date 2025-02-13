@@ -11,4 +11,5 @@ export const OPEN_POSITION_DATA = [
 ];
 export const OPEN_POSITION_HEADERS = ['User', 'Currency', 'Balance'];
 
-export const OWNED_POSITION_HEADERS = ['Currency', 'Balance', 'Withdrawable_At', 'Withdrawable_Balance'];
+// export const OWNED_POSITION_HEADERS = ['Currency', 'Balance', 'Withdrawable_At', 'Withdrawable_Balance'];
+export const OWNED_POSITION_HEADERS = ['Currency', 'Balance'];

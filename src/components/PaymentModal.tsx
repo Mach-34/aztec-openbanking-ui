@@ -31,9 +31,19 @@ export default function PaymentModal({
       height={80}
       onClose={onClose}
       open={open}
-      title='Payment initiated'
+      title='Claim tokens on Aztec'
     >
-      <PaymentChecklist currentStep={2} />
+      <div className='flex justify-start w-full'>
+        <PaymentChecklist
+          currentStep={4}
+          steps={[
+            'Authorize Revolut',
+            'Initiating Payment on Revolut',
+            'Payment sent. Awaiting confirmation',
+            'Prove Payment on Aztec',
+          ]}
+        />
+      </div>
     </Modal>
   );
 }

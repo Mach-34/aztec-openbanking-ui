@@ -258,28 +258,33 @@ function App() {
   const getEscrowLiquidityPositions = useCallback(async () => {
     if (!escrowContract || !wallet) return;
     try {
-      const escrowOwnerNote = await escrowContract.methods
+      const escrowOwnerNote: any = await escrowContract.methods
         .get_escrow_owner_note(wallet.getAddress())
         .simulate();
-      // @ts-ignore
-      const commitment: bigint = escrowOwnerNote.commitment;
-      const commitmentBalance = await escrowContract.methods
-        .get_escrow_liqudity_position(commitment)
-        .simulate();
 
-      // format position data for table
-      setPositions([
-        {
-          // @ts-ignore
-          balance: commitmentBalance.balance,
-          currency: 'GBP',
-          // @ts-ignore
-          withdrawable_at: commitmentBalance.withdrawable_at,
-          withdrawable_balance:
-            // @ts-ignore
-            commitmentBalance.withdrawable_balance,
-        },
-      ]);
+      if (escrowOwnerNote._is_some) {
+        const commitment: bigint = escrowOwnerNote._value.commitment;
+
+        const commitmentBalance: any = await escrowContract.methods
+          .get_escrow_liqudity_position(commitment)
+          .simulate();
+
+        if (commitmentBalance._is_some) {
+          // format position data for table
+          setPositions([
+            {
+              // @ts-ignore
+              balance: commitmentBalance._value.balance,
+              currency: 'GBP',
+              // @ts-ignore
+              withdrawable_at: commitmentBalance._value.withdrawable_at,
+              withdrawable_balance:
+                // @ts-ignore
+                commitmentBalance._value.withdrawable_balance,
+            },
+          ]);
+        }
+      }
     } catch {
     } finally {
       setFetchingTokenPositions(false);

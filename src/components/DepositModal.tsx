@@ -22,9 +22,13 @@ export default function DepositModal({
 
   const onDeposit = async () => {
     setDepositing(true);
-    await onFinish(sortCode, currencyCode, Number(amount));
-    setDepositing(false);
-    onClose();
+    try {
+      await onFinish(sortCode, currencyCode, Number(amount));
+      onClose();
+    } catch {
+    } finally {
+      setDepositing(false);
+    }
   };
 
   return (
