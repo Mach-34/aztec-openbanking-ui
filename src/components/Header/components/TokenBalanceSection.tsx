@@ -24,8 +24,9 @@ export default function TokenBalanceSection() {
     if (!tokenAdmin || !tokenContract || !wallet) return;
     try {
       setMinting(true);
-      const privateMintCall = tokenContract.methods
-        .mint_to_private(
+      const privateMintCall = tokenContract
+        .withAccount(tokenAdmin)
+        .methods.mint_to_private(
           tokenAdmin.getAddress(),
           wallet.getAddress(),
           MINT_AMOUNT
