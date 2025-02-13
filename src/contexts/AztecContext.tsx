@@ -242,7 +242,7 @@ export const AztecProvider = ({ children }: { children: ReactNode }) => {
   }, [contracts, fetchTokenBalances, wallet]);
 
   useEffect(() => {
-    connectToPXE();
+    // connectToPXE();
   }, []);
 
   return (
