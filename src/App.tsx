@@ -158,42 +158,50 @@ function App() {
   };
 
   const getCommitments = async () => {
-    console.log('SERVER URL: ', SERVER_URL);
     const res = await fetch(`${SERVER_URL}/commitments`, {
       headers: { 'ngrok-skip-browser-warning': '69420' },
     });
-    const commitments = await res.text();
-    console.log('Commitments: ', commitments);
-    return [];
+    const commitments = await res.json();
+    return commitments;
   };
 
   const getOrders = useCallback(async () => {
     if (!escrowContract) return;
     setFetchingOrders(true);
     const commitments = await getCommitments();
-    // // TODO: Get fetch all commitment function working
-    // const escrowBalances = await Promise.all(
-    //   commitments.map(
-    //     async (commitment) =>
-    //       await escrowContract.methods
-    //         .get_escrow_liqudity_position(commitment)
-    //         .simulate()
-    //   )
-    // );
-    // const formatted = escrowBalances
-    //   .filter((balance: any) => balance._is_some)
-    //   .map(({ _value }: any, index) => {
-    //     const pool = Fr.fromString(
-    //       commitments[index].toString()
-    //     ).toShortString();
-    //     return {
-    //       pool,
-    //       currency: CurrencyCode.GBP,
-    //       balance: _value.balance,
-    //     };
-    //   });
-    // setOrders(formatted);
-    // setFetchingOrders(false);
+    const providerData = commitments.map(({ commitment, sortCode }: any) => ({
+      commitment,
+      sortCode,
+    }));
+
+    // TODO: Get fetch all commitment function working
+    const escrowBalances = await Promise.all(
+      providerData.map(async (commitment: any) => {
+        const balance = await escrowContract.methods
+          .get_escrow_liqudity_position(commitment.commitment)
+          .simulate();
+
+        return {
+          ...commitment,
+          balance,
+        };
+      })
+    );
+
+    // filter out nonexistent balances
+    const formatted = escrowBalances
+      .filter((balance) => balance.balance._is_some)
+      .map((balance: any) => {
+        return {
+          balance: balance.balance._value.balance,
+          commitment: balance.commitment,
+          currency: CurrencyCode.GBP,
+          sortCode: balance.sortCode,
+        };
+      });
+
+    setOrders(formatted);
+    setFetchingOrders(false);
   }, [escrowContract]);
 
   const getEscrowLiquidityPositions = useCallback(async () => {
