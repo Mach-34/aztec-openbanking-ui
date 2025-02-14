@@ -10,7 +10,7 @@ import { generateAztecInputs } from '@openbanking.nr/js-inputs';
 import forge from 'node-forge';
 import { useAztec } from '../../contexts/AztecContext';
 import { toast } from 'react-toastify';
-import { toUSDCDecimals } from '../../utils';
+import { formatUSDC, toUSDCDecimals } from '../../utils';
 
 type PaymentModalProps = {
   creditiorData: CreditorData | null;
@@ -202,7 +202,8 @@ export default function PaymentModal({
             <div className='flex flex-col mb-4 items-start w-full'>
               <div className='text-lg'>Currency: {creditiorData?.currency}</div>
               <div className='text-lg'>
-                Creditor Balance: {creditiorData?.balance}
+                Creditor Balance: £
+                {creditiorData ? formatUSDC(creditiorData.balance) : 0}
               </div>
             </div>
             <div className='flex justify-center w-full'>

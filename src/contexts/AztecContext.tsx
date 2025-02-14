@@ -33,6 +33,7 @@ import { toast } from 'react-toastify';
 
 type AztecContextProps = {
   connectWallet: () => void;
+  connectingWallet: boolean;
   connectToPXE: () => void;
   disconnectWallet: () => void;
   escrowContract: Contract<OpenbankingEscrowContract> | undefined;
@@ -50,6 +51,7 @@ type AztecContextProps = {
 
 const DEFAULT_AZTEC_CONTEXT_PROPS = {
   connectWallet: () => null,
+  connectingWallet: false,
   connectToPXE: () => null,
   disconnectWallet: () => null,
   escrowContract: undefined,
@@ -87,6 +89,7 @@ const {
 } = import.meta.env;
 
 export const AztecProvider = ({ children }: { children: ReactNode }) => {
+  const [connectingWallet, setConnectingWallet] = useState<boolean>(false);
   const [contracts, setContracts] = useState<OpenbankingDemoContracts | null>(
     null
   );
@@ -111,11 +114,20 @@ export const AztecProvider = ({ children }: { children: ReactNode }) => {
 
   const connectWallet = async () => {
     if (!pxe) return;
-    const wcParams = {
-      projectId: WALLET_CONNECT_ID,
-    };
-    const shieldWallet = new ReownPopupWalletSdk(pxe, wcParams);
-    setWallet(await shieldWallet.connect());
+    setConnectingWallet(true);
+    try {
+      const wcParams = {
+        projectId: WALLET_CONNECT_ID,
+      };
+      const obsidionPopup = new ReownPopupWalletSdk(pxe, wcParams);
+      const obsidionWallet = await obsidionPopup.connect();
+      console.log('Obsidion wallet: ', obsidionWallet);
+      setWallet(obsidionWallet);
+    } catch {
+      toast.error('Error connection wallet');
+    } finally {
+      setConnectingWallet(false);
+    }
   };
 
   const connectToPXE = async () => {
@@ -247,6 +259,7 @@ export const AztecProvider = ({ children }: { children: ReactNode }) => {
   return (
     <AztecContext.Provider
       value={{
+        connectingWallet,
         connectWallet,
         connectToPXE,
         disconnectWallet,

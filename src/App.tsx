@@ -22,6 +22,7 @@ import {
   OWNED_POSITION_HEADERS,
 } from './utils/data';
 import useWebSocket from './hooks/useWebsocket';
+import Loader from './components/Loader';
 Modal.setAppElement('#root');
 
 const TABS = ['Your Positions', 'Open Orders'];
@@ -40,7 +41,8 @@ const {
 
 function App() {
   const { escrowContract, setTokenBalance, tokenContract, wallet } = useAztec();
-  const [orders] = useState<Array<CreditorData>>(OPEN_POSITION_DATA);
+  const [orders, setOrders] = useState<Array<CreditorData>>([]);
+  const [fetchingOrders, setFetchingOrders] = useState<boolean>(true);
   const [fetchingPositions, setFetchingTokenPositions] =
     useState<boolean>(true);
   const [positions, setPositions] = useState<OwnedPositions[]>([]);
@@ -55,13 +57,20 @@ function App() {
 
   const { message } = useWebSocket(WEBSOCKET_URL);
 
+  const formattedOrders = useMemo(() => {
+    return orders.map((order) => ({
+      ...order,
+      balance: `£${formatUSDC(order.balance)}`,
+    }));
+  }, [orders]);
+
   // TODO: Set up table component to handle different data formats insteads of mapping through array
   const formattedPositions = useMemo(() => {
     return positions.map((position) => ({
-      balance: `$${formatUSDC(position.balance)}`,
+      balance: `£${formatUSDC(position.balance)}`,
       currency: position.currency,
       withdrawable_at: position.withdrawable_at.toString(),
-      withdrawable_balance: `$${formatUSDC(position.withdrawable_balance)}`,
+      withdrawable_balance: `£${formatUSDC(position.withdrawable_balance)}`,
     }));
   }, [positions]);
 
@@ -125,6 +134,22 @@ function App() {
         },
       ]);
 
+      // fetch newly created commitment
+      let note: any = await escrowContract
+        .withAccount(wallet)
+        .methods.get_escrow_owner_note(wallet.getAddress())
+        .simulate();
+
+      // store commitment on DB
+      await fetch(`${SERVER_URL}/commitment`, {
+        body: JSON.stringify({ sortCode, commitment: note._value.commitment }),
+        headers: {
+          'content-type': 'application/json',
+          'ngrok-skip-browser-warning': '69420',
+        },
+        method: 'POST',
+      });
+
       toast.success('Succesfully initialized provider balance');
     } catch (err) {
       console.log('Error: ', err);
@@ -133,12 +158,43 @@ function App() {
   };
 
   const getCommitments = async () => {
-    const res = await fetch(
-      'https://9ca5-80-87-23-81.ngrok-free.app/commitments'
-    );
-    const data = await res.text();
-    console.log('Data: ', data);
+    console.log('SERVER URL: ', SERVER_URL);
+    const res = await fetch(`${SERVER_URL}/commitments`, {
+      headers: { 'ngrok-skip-browser-warning': '69420' },
+    });
+    const commitments = await res.text();
+    console.log('Commitments: ', commitments);
+    return [];
   };
+
+  const getOrders = useCallback(async () => {
+    if (!escrowContract) return;
+    setFetchingOrders(true);
+    const commitments = await getCommitments();
+    // // TODO: Get fetch all commitment function working
+    // const escrowBalances = await Promise.all(
+    //   commitments.map(
+    //     async (commitment) =>
+    //       await escrowContract.methods
+    //         .get_escrow_liqudity_position(commitment)
+    //         .simulate()
+    //   )
+    // );
+    // const formatted = escrowBalances
+    //   .filter((balance: any) => balance._is_some)
+    //   .map(({ _value }: any, index) => {
+    //     const pool = Fr.fromString(
+    //       commitments[index].toString()
+    //     ).toShortString();
+    //     return {
+    //       pool,
+    //       currency: CurrencyCode.GBP,
+    //       balance: _value.balance,
+    //     };
+    //   });
+    // setOrders(formatted);
+    // setFetchingOrders(false);
+  }, [escrowContract]);
 
   const getEscrowLiquidityPositions = useCallback(async () => {
     if (!escrowContract || !wallet) return;
@@ -256,10 +312,12 @@ function App() {
       if (!wallet) {
         setSelectedTab(TABS[1]);
       }
-      // getCommitments();
       getEscrowLiquidityPositions();
+      getOrders();
     })();
-  }, [escrowContract, wallet]);
+  }, [escrowContract, getEscrowLiquidityPositions, getOrders, wallet]);
+
+  console.log('Order');
 
   return (
     <>
@@ -323,9 +381,14 @@ function App() {
                   </button>
                 </div>
               )
+            ) : fetchingOrders ? (
+              <div className='flex flex-col gap-4 items-center justify-center mt-16'>
+                <div className='text-3xl'>Fetching Orders</div>
+                <Loader color='#913DE5' size={50} />
+              </div>
             ) : (
               <DataTable
-                data={orders}
+                data={formattedOrders}
                 headers={OPEN_POSITION_HEADERS}
                 primaryAction={{
                   label: 'Pay',
