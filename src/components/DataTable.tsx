@@ -1,7 +1,7 @@
 type DataTableProps = {
   data: Record<string, string>[];
   headers: string[];
-  primaryAction: {
+  primaryAction?: {
     label: string;
     onClick: (index: number) => void;
   };
@@ -45,13 +45,15 @@ const DataTable: React.FC<DataTableProps> = ({
                   </td>
                 ))}
                 <td className='flex gap-2 justify-end p-3'>
-                  <button
-                    className='px-3 py-1 text-sm'
-                    onClick={() => primaryAction.onClick(rowIndex)}
-                  >
-                    {primaryAction.label}
-                  </button>
-                  {secondaryAction && (
+                  {primaryAction && !row.disableAction && (
+                    <button
+                      className='px-3 py-1 text-sm'
+                      onClick={() => primaryAction.onClick(rowIndex)}
+                    >
+                      {primaryAction.label}
+                    </button>
+                  )}
+                  {secondaryAction && !row.disableAction && (
                     <button
                       className='px-3 py-1 text-sm'
                       onClick={() => secondaryAction.onClick(rowIndex)}

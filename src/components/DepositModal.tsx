@@ -18,22 +18,38 @@ export default function DepositModal({
   const [amount, setAmount] = useState('');
   const [currencyCode, setCurrencyCode] = useState('');
   const [depositing, setDepositing] = useState<boolean>(false);
+  const [inputValidationError, setInputValidationError] =
+    useState<boolean>(false);
   const [sortCode, setSortCode] = useState('');
 
   const onDeposit = async () => {
-    setDepositing(true);
-    try {
-      await onFinish(sortCode, currencyCode, Number(amount));
-      onClose();
-    } catch {
-    } finally {
-      setDepositing(false);
+    if (validateInputs()) {
+      setDepositing(true);
+      try {
+        await onFinish(sortCode, currencyCode, Number(amount));
+        onClose();
+      } catch {
+      } finally {
+        setDepositing(false);
+      }
+    }
+  };
+
+  const validateInputs = () => {
+    if (/^\d{14}$/.test(sortCode)) {
+      setInputValidationError(false);
+      return true;
+    } else {
+      setInputValidationError(true);
+      return false;
     }
   };
 
   useEffect(() => {
     setAmount('');
     setCurrencyCode('');
+    setDepositing(false);
+    setInputValidationError(false);
     setSortCode('');
   }, [open]);
 
@@ -52,6 +68,11 @@ export default function DepositModal({
       <div className='flex flex-col items-center gap-5 w-full'>
         <Input
           className='w-3/4'
+          error={
+            inputValidationError
+              ? 'Sort code must be exactly 14 numberic characters'
+              : ''
+          }
           onChange={setSortCode}
           placeholder='Enter sort code...'
           value={sortCode}
@@ -66,6 +87,7 @@ export default function DepositModal({
         />
         <Input
           className='w-3/4'
+          error={inputValidationError && !amount ? 'Enter valid amount' : ''}
           onChange={setAmount}
           placeholder='Enter amount...'
           value={amount}
