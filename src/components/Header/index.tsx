@@ -7,9 +7,11 @@ import { AztecAddress } from '@aztec/circuits.js';
 import PXEBadge from './components/PXEBadge';
 import ContractSection from './components/ContractSection';
 import TokenBalanceSection from './components/TokenBalanceSection';
+import Loader from '../Loader';
 
 export default function Header(): JSX.Element {
-  const { connectWallet, disconnectWallet, pxe, wallet } = useAztec();
+  const { connectingWallet, connectWallet, disconnectWallet, pxe, wallet } =
+    useAztec();
   const menuRef = useRef<HTMLDivElement>(null);
   const [showMenu, setShowMenu] = useState<boolean>(false);
 
@@ -32,9 +34,9 @@ export default function Header(): JSX.Element {
     if (wallet) {
       return truncateAddress(wallet.getAddress().toString());
     } else {
-      return 'Connect Wallet';
+      return connectingWallet ? 'Loading Obsidion...' : 'Connect Wallet';
     }
-  }, [wallet]);
+  }, [connectingWallet, wallet]);
 
   return (
     <div className='flex items-center justify-between py-5 px-10'>
@@ -48,11 +50,13 @@ export default function Header(): JSX.Element {
           <div>
             <button
               className='flex gap-2 items-center ml-auto relative'
+              disabled={connectingWallet}
               onClick={() =>
                 wallet ? setShowMenu(!showMenu) : connectWallet()
               }
             >
               {walletButtonText}
+              {connectingWallet && <Loader size={16} />}
               {!!wallet && showMenu && (
                 <div
                   className='absolute bg-[#913DE5] left-0 rounded top-[calc(100%+12px)] w-full'

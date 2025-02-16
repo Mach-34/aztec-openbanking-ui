@@ -18,7 +18,7 @@ export default function TokenBalanceSection() {
   } = useAztec();
   const [minting, setMinting] = useState<boolean>(false);
 
-  const MINT_AMOUNT = toUSDCDecimals(10000n);
+  const MINT_AMOUNT = toUSDCDecimals(10n ** 7n);
 
   const mintUsdc = async () => {
     if (!tokenAdmin || !tokenContract || !wallet) return;

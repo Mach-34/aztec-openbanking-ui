@@ -1,6 +1,5 @@
 import {
   ChangeEvent,
-  ChangeEventHandler,
   Dispatch,
   HTMLInputTypeAttribute,
   SetStateAction,
@@ -8,6 +7,7 @@ import {
 
 type InputProps = {
   className?: string;
+  error?: string;
   onChange: Dispatch<SetStateAction<string>>;
   placeholder?: string;
   title: string;
@@ -17,6 +17,7 @@ type InputProps = {
 
 export default function Input({
   className,
+  error,
   onChange,
   placeholder,
   title,
@@ -41,11 +42,12 @@ export default function Input({
     <div className={className}>
       <div className='text-[#913DE5] text-sm mb-1'>{title}</div>
       <input
-        className='w-full'
+        className={`${error ? 'border-red-500' : ''} w-full`}
         onChange={(e) => handleInputValidation(e)}
         placeholder={placeholder}
         value={value}
       />
+      <div className='mt-1 text-red-500 text-xs'>{error}</div>
     </div>
   );
 }

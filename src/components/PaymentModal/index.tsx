@@ -1,20 +1,24 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import {
+  Dispatch,
+  SetStateAction,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import Modal, { ModalProps } from '../Modal';
 import PaymentChecklist from '../PaymentChecklist';
 import Input from '../Input';
 import { CreditorData } from '../../utils/data';
 import { prepareOpenbankingPayment } from './utils';
-import Button from '../Button';
-import { decodeProtectedHeader } from 'jose';
-import { generateAztecInputs } from '@openbanking.nr/js-inputs';
-import forge from 'node-forge';
 import { useAztec } from '../../contexts/AztecContext';
 import { toast } from 'react-toastify';
-import { toUSDCDecimals } from '../../utils';
+import { formatUSDC, toUSDCDecimals } from '../../utils';
 
 type PaymentModalProps = {
   creditiorData: CreditorData | null;
   message: string;
+  setOrders: Dispatch<SetStateAction<CreditorData[]>>;
 } & Omit<ModalProps, 'children' | 'title'>;
 
 const { VITE_APP_SERVER_URL: SERVER_URL } = import.meta.env;
@@ -24,11 +28,14 @@ export default function PaymentModal({
   onClose,
   open,
   message,
+  setOrders,
 }: PaymentModalProps): JSX.Element {
   const { escrowContract, setTokenBalance, wallet } = useAztec();
   const [amount, setAmount] = useState('');
   const [aztecProofData, setAztecProofData] = useState<any>({});
   const [claimingTokens, setClaimingTokens] = useState<boolean>(false);
+  const [inputValidationError, setInputValidationError] =
+    useState<boolean>(false);
   const [paymentFlowStep, setPaymentFlowStep] = useState<number>(-1);
   const popupRef = useRef<Window | null>(null);
 
@@ -61,7 +68,7 @@ export default function PaymentModal({
   };
 
   const claimTokens = async () => {
-    if (!aztecProofData || !escrowContract || !wallet) return;
+    if (!aztecProofData || !creditiorData || !escrowContract || !wallet) return;
     setClaimingTokens(true);
     try {
       setPaymentFlowStep(4);
@@ -72,10 +79,25 @@ export default function PaymentModal({
         .send()
         .wait();
 
+      const amountDecimals = toUSDCDecimals(amount);
+
+      // update token balance
       setTokenBalance((prev) => ({
         ...prev,
-        private: prev.private + toUSDCDecimals(5n),
+        private: prev.private + amountDecimals,
       }));
+
+      // update orders
+      setOrders((prev) => {
+        const copy = [...prev];
+        const index = copy.findIndex(
+          (order) => order.commitment === creditiorData.commitment
+        );
+        let creditor = copy[index];
+        creditor = { ...creditor, balance: creditor.balance - amountDecimals };
+        copy[index] = creditor;
+        return copy;
+      });
 
       toast.success('Successfully claimed tokens');
       setTimeout(() => {
@@ -135,11 +157,28 @@ export default function PaymentModal({
       };
     }
     return {
-      action: () => setPaymentFlowStep(0),
+      action: () => {
+        if (!validateInputs()) {
+          setInputValidationError(true);
+        } else {
+          setPaymentFlowStep(0);
+        }
+      },
       loading: false,
       text: 'Begin Payment Flow',
     };
   }, [claimingTokens, paymentFlowStep]);
+
+  const validateInputs = () => {
+    return true;
+    // if (/^\d+(\.\d{2})?$/.test(amount)) {
+    //   // setInputValidationError(false);
+    //   return true;
+    // } else {
+    //   //setInputValidationError(true);
+    //   return false;
+    // }
+  };
 
   useEffect(() => {
     if (!message) return;
@@ -163,6 +202,7 @@ export default function PaymentModal({
   useEffect(() => {
     setAmount('');
     setClaimingTokens(false);
+    setInputValidationError(false);
     setPaymentFlowStep(-1);
   }, [open]);
 
@@ -181,9 +221,7 @@ export default function PaymentModal({
       onClose={onClose}
       open={open}
       title={
-        paymentFlowStep > -1
-          ? `Sending $${amount} dollars to ${creditiorData?.name}`
-          : `Prepare payment to ${creditiorData?.name}`
+        paymentFlowStep > -1 ? `Sending $${amount} dollars` : `Prepare payment`
       }
     >
       <div className='flex justify-start w-full'>
@@ -202,12 +240,18 @@ export default function PaymentModal({
             <div className='flex flex-col mb-4 items-start w-full'>
               <div className='text-lg'>Currency: {creditiorData?.currency}</div>
               <div className='text-lg'>
-                Creditor Balance: {creditiorData?.balance}
+                Creditor Balance: £
+                {creditiorData ? formatUSDC(creditiorData.balance) : 0}
               </div>
             </div>
             <div className='flex justify-center w-full'>
               <Input
                 onChange={setAmount}
+                error={
+                  inputValidationError
+                    ? 'Amount must be a numeric value with two decimals'
+                    : ''
+                }
                 placeholder='Enter amount...'
                 value={amount}
                 title='Amount'

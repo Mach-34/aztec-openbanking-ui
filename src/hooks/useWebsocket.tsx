@@ -12,7 +12,6 @@ const useWebSocket = (url: string) => {
     };
 
     ws.current.onmessage = (event) => {
-      console.log('WebSocket Message Received:', event.data);
       setMessage(event.data);
     };
 
