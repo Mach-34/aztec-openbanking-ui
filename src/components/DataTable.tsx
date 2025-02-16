@@ -1,5 +1,7 @@
+import { JSX } from 'react';
+
 type DataTableProps = {
-  data: Record<string, string>[];
+  data: Record<string, string | JSX.Element>[];
   headers: string[];
   primaryAction?: {
     label: string;

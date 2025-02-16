@@ -124,7 +124,7 @@ export const AztecProvider = ({ children }: { children: ReactNode }) => {
       console.log('Obsidion wallet: ', obsidionWallet);
       setWallet(obsidionWallet);
     } catch {
-      toast.error('Error connection wallet');
+      toast.error('Error connecting wallet');
     } finally {
       setConnectingWallet(false);
     }

@@ -12,7 +12,12 @@ const useWebSocket = (url: string) => {
     };
 
     ws.current.onmessage = (event) => {
-      setMessage(event.data);
+      setMessage((prev) => {
+        if (prev === event.data) {
+          return prev + '';
+        }
+        return event.data;
+      });
     };
 
     ws.current.onerror = (error) => {

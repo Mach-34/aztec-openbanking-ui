@@ -1,5 +1,6 @@
 import {
   Dispatch,
+  JSX,
   SetStateAction,
   useEffect,
   useMemo,
@@ -60,11 +61,21 @@ export default function PaymentModal({
     });
 
     const { authUrl } = await res.json();
-    popupRef.current = window.open(
+    const popup = window.open(
       authUrl,
       '_blank',
       `width=${POPUP_WIDTH},height=${POPUP_HEIGHT},top=${top},left=${left}`
     );
+
+    // TODO: Need to check that this doesn't cause problems with slow internet speeds
+    setTimeout(() => {
+      if (popup && popup.location.href === 'about:blank') {
+        toast.error('Error processing authorization');
+        popup.close();
+      } else {
+        popupRef.current = popup;
+      }
+    }, 2000);
   };
 
   const claimTokens = async () => {
@@ -107,6 +118,14 @@ export default function PaymentModal({
       toast.error('Error claiming tokens');
     } finally {
       setClaimingTokens(false);
+    }
+  };
+
+  const closePopup = () => {
+    // close popup
+    if (popupRef.current && !popupRef.current.closed) {
+      console.log('Inside if-statement');
+      popupRef.current.close();
     }
   };
 
@@ -191,11 +210,12 @@ export default function PaymentModal({
         setPaymentFlowStep(3);
       }, 2500);
     } else if (parsed.message === 'Authorization successful') {
-      // close popup
-      if (popupRef.current && !popupRef.current.closed) {
-        popupRef.current.close();
-      }
+      closePopup();
       setPaymentFlowStep(1);
+    } else if (parsed.message === 'Payment failed') {
+      closePopup();
+      setPaymentFlowStep(0);
+      toast.error('Payment failed');
     }
   }, [message]);
 
