@@ -6,8 +6,6 @@ export const AZTEC_WALLETS = [
     "0x11a881081baafd64bacfaf59d7f9b66ec2ff9441417c68a80db00eecfae3ebe7"
 ];
 
-export const DEFAULT_PXE_URL = "http://localhost:8080"
-
 export const USDC_TOKEN = {
     symbol: "USDC",
     name: "Aztec USDC",

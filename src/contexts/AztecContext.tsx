@@ -17,7 +17,7 @@ import {
   waitForPXE,
 } from '@aztec/aztec.js';
 import usePXEHealth from '../hooks/usePXEHealth';
-import { AZTEC_WALLET_LS_KEY, DEFAULT_PXE_URL } from '../utils/constants';
+import { AZTEC_WALLET_LS_KEY } from '../utils/constants';
 import { getSingleKeyAccount } from '@aztec/accounts/single_key';
 import { ReownPopupWalletSdk } from '@shieldswap/wallet-sdk';
 import { Contract, Eip1193Account } from '@shieldswap/wallet-sdk/eip1193';
@@ -84,6 +84,7 @@ type TokenBalance = {
 const {
   VITE_APP_TOKEN_ADMIN_SECRET_KEY: ADMIN_SECRET_KEY,
   VITE_APP_ESCROW_CONTRACT_ADDRESS: ESCROW_CONTRACT_ADDRESS,
+  VITE_APP_PXE_URL: PXE_URL,
   VITE_APP_TOKEN_CONTRACT_ADDRESS: TOKEN_CONTRACT_ADDRESS,
   VITE_APP_WALLET_CONNECT_ID: WALLET_CONNECT_ID,
 } = import.meta.env;
@@ -131,7 +132,7 @@ export const AztecProvider = ({ children }: { children: ReactNode }) => {
 
   const connectToPXE = async () => {
     setWaitingForPXE(true);
-    const client = createPXEClient(DEFAULT_PXE_URL);
+    const client = createPXEClient(PXE_URL);
     await waitForPXE(client);
     setPXE(client);
     setWaitingForPXE(false);

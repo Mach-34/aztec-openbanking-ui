@@ -1,7 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { PXE } from '@aztec/aztec.js';
 import { toast } from 'react-toastify';
-import { DEFAULT_PXE_URL } from '../utils/constants';
 
 export default function usePXEHealth(
   pxe: PXE | null,
@@ -9,6 +8,8 @@ export default function usePXEHealth(
 ) {
   const intervalIdRef = useRef(null);
   const isProcessingRef = useRef(false);
+
+  const { VITE_APP_PXE_URL: PXE_URL } = import.meta.env;
 
   useEffect(() => {
     // Clear any existing interval when pxe changes or on cleanup
@@ -30,7 +31,7 @@ export default function usePXEHealth(
           await pxe.getPXEInfo();
         } catch {
           onPXEConnectionLost();
-          toast.error(`Lost connection to PXE at ${DEFAULT_PXE_URL}`);
+          toast.error(`Lost connection to PXE at ${PXE_URL}`);
         } finally {
           isProcessingRef.current = false;
         }
