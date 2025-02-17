@@ -1,9 +1,7 @@
-import { useMemo, useRef, useState } from 'react';
+import { JSX, useMemo, useRef, useState } from 'react';
 import { useAztec } from '../../contexts/AztecContext';
 import { truncateAddress } from '../../utils';
 import useOutsideAlerter from '../../hooks/useOutsideAlerter';
-import { toast } from 'react-toastify';
-import { AztecAddress } from '@aztec/circuits.js';
 import PXEBadge from './components/PXEBadge';
 import ContractSection from './components/ContractSection';
 import TokenBalanceSection from './components/TokenBalanceSection';
@@ -16,19 +14,6 @@ export default function Header(): JSX.Element {
   const [showMenu, setShowMenu] = useState<boolean>(false);
 
   useOutsideAlerter(menuRef, () => setShowMenu(false));
-
-  const copyAddress = async (
-    e: React.MouseEvent<HTMLButtonElement, MouseEvent>,
-    address: AztecAddress
-  ) => {
-    e.stopPropagation();
-    try {
-      await navigator.clipboard.writeText(address.toString());
-      toast.success('Address copied to clipboard!');
-    } catch {
-      toast.error('Error occurred.');
-    }
-  };
 
   const walletButtonText = useMemo(() => {
     if (wallet) {

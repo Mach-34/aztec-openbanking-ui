@@ -466,6 +466,7 @@ function App() {
             </div>
           ) : (
             <DataTable
+              // @ts-ignore
               data={formattedOrders}
               headers={OPEN_POSITION_HEADERS}
               primaryAction={

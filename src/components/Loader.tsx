@@ -1,4 +1,5 @@
 import { Loader2 } from 'lucide-react';
+import { JSX } from 'react';
 
 type LoaderProps = {
   color?: string;

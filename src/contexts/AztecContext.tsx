@@ -121,10 +121,9 @@ export const AztecProvider = ({ children }: { children: ReactNode }) => {
       };
       const obsidionPopup = new ReownPopupWalletSdk(pxe, wcParams);
       const obsidionWallet = await obsidionPopup.connect();
-      console.log('Obsidion wallet: ', obsidionWallet);
       setWallet(obsidionWallet);
     } catch {
-      toast.error('Error connection wallet');
+      toast.error('Error connecting wallet');
     } finally {
       setConnectingWallet(false);
     }

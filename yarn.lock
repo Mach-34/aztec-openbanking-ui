@@ -1170,8 +1170,10 @@
   resolved "https://registry.yarnpkg.com/@noir-lang/types/-/types-1.0.0-beta.1.tgz#4fe9062a8209c9e0987cc41c9506cc4423004b8f"
   integrity sha512-rcisXDdKNLA7mh0Ll9j3MGG5BP3W52K3Owr0+opJhs+4jHoAx1Gb5vGNG9s6nYb2i21VZMgOzKVvBd25ck0b9w==
 
-"@openbanking.nr/js-inputs@../openbank-circuit/js":
-  version "1.0.0"
+"@openbanking-nr/js-inputs@^1.0.3":
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/@openbanking-nr/js-inputs/-/js-inputs-1.0.3.tgz#ce0781daa3c58861a5aeb00d89efeb64c04ac9bb"
+  integrity sha512-qAqoGoHbUWj/835zJSvVfhsP2pzDXH6D6qDG5cBqu9Y0xhMs14kp7ExH1vcjxJ6Zfswj3Gopy59IhL7Q/iS0qA==
   dependencies:
     "@aztec/accounts" "=0.76.1"
     "@aztec/noir-contracts.js" "=0.76.1"
