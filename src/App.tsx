@@ -398,9 +398,9 @@ function App() {
   return (
     <div className='h-screen flex flex-col'>
       <Header />
-      <div className='flex-col flex-1 px-10 py-4 h-full'>
+      <div className='flex flex-col flex-1 px-10 py-4'>
         <div className='flex items-center justify-between'>
-          <div className='flex gap-2 text-lg'>
+          <div className='flex gap-2 text-lg mb-10'>
             {TABS.slice(wallet && !fetchingPositions ? 0 : 1).map(
               (tab: string) => (
                 <div
@@ -426,22 +426,25 @@ function App() {
             </button>
           )}
         </div>
-        <div className='flex flex-1 h-full items-center justify-center w-full'>
+        <div className='flex flex-1 justify-center'>
           {selectedTab === TABS[0] ? (
             positions.length ? (
-              <DataTable
-                data={formattedPositions}
-                headers={OWNED_POSITION_HEADERS}
-                primaryAction={{
-                  label: 'Increase',
-                  onClick: (rowIndex: number) =>
-                    setShowIncreaseBalanceModal(rowIndex),
-                }}
-                secondaryAction={{
-                  label: 'Withdraw',
-                  onClick: (rowIndex: number) => setShowWithdrawModal(rowIndex),
-                }}
-              />
+              <div className='flex flex-1 items-start'>
+                <DataTable
+                  data={formattedPositions}
+                  headers={OWNED_POSITION_HEADERS}
+                  primaryAction={{
+                    label: 'Increase',
+                    onClick: (rowIndex: number) =>
+                      setShowIncreaseBalanceModal(rowIndex),
+                  }}
+                  secondaryAction={{
+                    label: 'Withdraw',
+                    onClick: (rowIndex: number) =>
+                      setShowWithdrawModal(rowIndex),
+                  }}
+                />
+              </div>
             ) : (
               <div className='flex flex-1 flex-col items-center gap-4 justify-center'>
                 <div className='text-2xl'>
@@ -456,7 +459,7 @@ function App() {
               </div>
             )
           ) : fetchingOrders ? (
-            <div className='flex flex-col gap-4 items-center justify-center'>
+            <div className='flex flex-1 flex-col gap-4 items-center justify-center'>
               <div className='text-3xl'>Fetching Orders</div>
               <Loader color='#913DE5' size={50} />
             </div>
@@ -465,19 +468,21 @@ function App() {
               No open orders
             </div>
           ) : (
-            <DataTable
-              // @ts-ignore
-              data={formattedOrders}
-              headers={OPEN_POSITION_HEADERS}
-              primaryAction={
-                wallet &&
-                !fetchingOrders && {
-                  label: 'Pay',
-                  onClick: (rowIndex: number) =>
-                    setSelectedCreditor(orders[rowIndex]),
+            <div className='flex flex-1 items-start'>
+              <DataTable
+                // @ts-ignore
+                data={formattedOrders}
+                headers={OPEN_POSITION_HEADERS}
+                primaryAction={
+                  wallet &&
+                  !fetchingOrders && {
+                    label: 'Pay',
+                    onClick: (rowIndex: number) =>
+                      setSelectedCreditor(orders[rowIndex]),
+                  }
                 }
-              }
-            />
+              />
+            </div>
           )}
         </div>
       </div>
