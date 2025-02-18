@@ -18,7 +18,7 @@ export default function DepositModal({
   open,
 }: DepositModalProps): JSX.Element {
   const [amount, setAmount] = useState('');
-  const [currencyCode, setCurrencyCode] = useState<string>('');
+  const [, setCurrencyCode] = useState<string>('');
   const [depositing, setDepositing] = useState<boolean>(false);
   const [inputValidationError, setInputValidationError] =
     useState<boolean>(false);
