@@ -1,6 +1,6 @@
 export enum CurrencyCode {
-    GBP = 'GBP',
-    USD = 'USD'
+    GBP = 'GBP 🇬🇧',
+    USD = 'USD 🇺🇸'
 }
 
 export const OPEN_POSITION_HEADERS = ['Pool', 'Currency', 'Balance'];

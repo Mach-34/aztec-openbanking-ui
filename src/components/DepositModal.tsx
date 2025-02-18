@@ -1,6 +1,8 @@
 import { JSX, useEffect, useState } from 'react';
 import Modal, { ModalProps } from './Modal';
 import Input from './Input';
+import { Dropdown } from './Dropdown';
+import { CurrencyCode } from '../utils/data';
 
 type DepositModalProps = {
   onFinish: (
@@ -16,7 +18,7 @@ export default function DepositModal({
   open,
 }: DepositModalProps): JSX.Element {
   const [amount, setAmount] = useState('');
-  const [currencyCode, setCurrencyCode] = useState('');
+  const [currencyCode, setCurrencyCode] = useState<string>('');
   const [depositing, setDepositing] = useState<boolean>(false);
   const [inputValidationError, setInputValidationError] =
     useState<boolean>(false);
@@ -65,9 +67,9 @@ export default function DepositModal({
       open={open}
       title='Create New Liquidity Position'
     >
-      <div className='flex flex-col items-center gap-5 w-full'>
+      <div className='flex flex-col items-center gap-5 mx-auto w-3/4'>
         <Input
-          className='w-3/4'
+          className='w-full'
           error={
             inputValidationError
               ? 'Sort code must be exactly 14 numberic characters'
@@ -78,15 +80,15 @@ export default function DepositModal({
           value={sortCode}
           title='Sort Code'
         />
-        <Input
-          className='w-3/4'
-          onChange={setCurrencyCode}
-          placeholder='Enter currency code...'
-          value={currencyCode}
-          title='Currency Code'
+        <Dropdown
+          className='mr-auto'
+          onSelect={() => null}
+          options={[CurrencyCode.GBP]}
+          selectedOption={CurrencyCode.GBP}
+          title='Currency'
         />
         <Input
-          className='w-3/4'
+          className='w-full'
           error={inputValidationError && !amount ? 'Enter valid amount' : ''}
           onChange={setAmount}
           placeholder='Enter amount...'
