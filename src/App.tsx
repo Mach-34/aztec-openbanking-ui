@@ -417,7 +417,7 @@ function App() {
               )
             )}
           </div>
-          {!fetchingPositions && wallet && (
+          {!fetchingPositions && !positions.length && (
             <button
               className='flex gap-2 items-center px-2 py-1'
               onClick={() => setShowDepositModal(true)}
