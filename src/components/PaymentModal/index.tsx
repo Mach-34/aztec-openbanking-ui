@@ -115,6 +115,7 @@ export default function PaymentModal({
         onClose();
       }, 2500);
     } catch (err) {
+      console.log('Error: ', err);
       toast.error('Error claiming tokens');
     } finally {
       setClaimingTokens(false);

@@ -102,7 +102,7 @@ function App() {
         Buffer.from(sortCode).reverse()
       );
       const currencyCodeField = Fr.fromBufferReduce(
-        Buffer.from(currencyCode).reverse()
+        Buffer.from('GBP').reverse()
       );
 
       // create authwit for escrow to transfer from user's private balance

@@ -36,7 +36,7 @@ export default function ContractSection() {
             </div>
           </div>
           <div className='flex gap-4 justify-between text-xs'>
-            <div>Escrow Registry:</div>
+            <div>Escrow:</div>
             <div>
               {escrowContract
                 ? truncateAddress(escrowContract.address.toString())
