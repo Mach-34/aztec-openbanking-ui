@@ -43,5 +43,5 @@ export default function usePXEHealth(
     return () => {
       clearExistingInterval();
     };
-  }, [onPXEConnectionLost, pxe]);
+  }, [onPXEConnectionLost, pxe, PXE_URL]);
 }

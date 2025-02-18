@@ -11,7 +11,6 @@ const nodeModulesPath = `${searchForWorkspaceRoot(process.cwd())}/node_modules`;
 const nodePolyfillsFix = (options?: PolyfillOptions | undefined): Plugin => {
   return {
     ...nodePolyfills(options),
-    /* @ts-ignore */
     resolveId(source: string) {
       const m =
         /^vite-plugin-node-polyfills\/shims\/(buffer|global|process)$/.exec(

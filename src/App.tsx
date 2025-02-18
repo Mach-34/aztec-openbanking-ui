@@ -102,7 +102,7 @@ function App() {
         Buffer.from(sortCode).reverse()
       );
       const currencyCodeField = Fr.fromBufferReduce(
-        Buffer.from('GBP').reverse()
+        Buffer.from(currencyCode.slice(0, 3)).reverse()
       );
 
       // create authwit for escrow to transfer from user's private balance
@@ -278,7 +278,7 @@ function App() {
     } finally {
       setFetchingTokenPositions(false);
     }
-  }, [escrowContract, wallet]);
+  }, [escrowContract, getEscrowOwnerNote, wallet]);
 
   const increaseBalance = async (amount: bigint) => {
     if (!escrowContract || !tokenContract || !wallet) return;
@@ -393,7 +393,7 @@ function App() {
       }
       getEscrowLiquidityPositions();
     })();
-  }, [getOrders, wallet]);
+  }, [getEscrowLiquidityPositions, getOrders, wallet]);
 
   return (
     <div className='h-screen flex flex-col'>

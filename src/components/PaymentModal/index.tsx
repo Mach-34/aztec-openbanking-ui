@@ -2,6 +2,7 @@ import {
   Dispatch,
   JSX,
   SetStateAction,
+  useCallback,
   useEffect,
   useMemo,
   useRef,
@@ -40,7 +41,7 @@ export default function PaymentModal({
   const [paymentFlowStep, setPaymentFlowStep] = useState<number>(-1);
   const popupRef = useRef<Window | null>(null);
 
-  const authRevolut = async () => {
+  const authRevolut = useCallback(async () => {
     if (!creditiorData) return;
     const paymentData = prepareOpenbankingPayment(creditiorData, amount);
 
@@ -76,9 +77,9 @@ export default function PaymentModal({
         popupRef.current = popup;
       }
     }, 2000);
-  };
+  }, [amount, creditiorData]);
 
-  const claimTokens = async () => {
+  const claimTokens = useCallback(async () => {
     if (!aztecProofData || !creditiorData || !escrowContract || !wallet) return;
     setClaimingTokens(true);
     try {
@@ -120,7 +121,16 @@ export default function PaymentModal({
     } finally {
       setClaimingTokens(false);
     }
-  };
+  }, [
+    amount,
+    aztecProofData,
+    creditiorData,
+    escrowContract,
+    onClose,
+    setOrders,
+    setTokenBalance,
+    wallet,
+  ]);
 
   const closePopup = () => {
     // close popup
@@ -178,26 +188,17 @@ export default function PaymentModal({
     }
     return {
       action: () => {
-        if (!validateInputs()) {
-          setInputValidationError(true);
-        } else {
+        if (/^\d+\.\d{2}$/.test(amount)) {
+          setInputValidationError(false);
           setPaymentFlowStep(0);
+        } else {
+          setInputValidationError(true);
         }
       },
       loading: false,
       text: 'Begin Payment Flow',
     };
-  }, [claimingTokens, paymentFlowStep]);
-
-  const validateInputs = () => {
-    if (/^\d+(\.\d{2})?$/.test(amount)) {
-      // setInputValidationError(false);
-      return true;
-    } else {
-      //setInputValidationError(true);
-      return false;
-    }
-  };
+  }, [amount, authRevolut, claimingTokens, claimTokens, paymentFlowStep]);
 
   useEffect(() => {
     if (!message) return;

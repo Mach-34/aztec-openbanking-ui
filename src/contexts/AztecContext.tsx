@@ -193,34 +193,37 @@ export const AztecProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const loadContractInstances = async (tokenAdmin: Eip1193Account) => {
-    if (ESCROW_CONTRACT_ADDRESS && TOKEN_CONTRACT_ADDRESS) {
-      const Token = Contract.fromAztec(TokenContract, TokenContractArtifact);
-      const Escrow = Contract.fromAztec(
-        OpenbankingEscrowContract,
-        OpenbankingEscrowContractArtifact
-      );
-
-      try {
-        const token = await Token.at(
-          AztecAddress.fromString(TOKEN_CONTRACT_ADDRESS),
-          tokenAdmin
+  const loadContractInstances = useCallback(
+    async (tokenAdmin: Eip1193Account) => {
+      if (ESCROW_CONTRACT_ADDRESS && TOKEN_CONTRACT_ADDRESS) {
+        const Token = Contract.fromAztec(TokenContract, TokenContractArtifact);
+        const Escrow = Contract.fromAztec(
+          OpenbankingEscrowContract,
+          OpenbankingEscrowContractArtifact
         );
 
-        const escrow = await Escrow.at(
-          AztecAddress.fromString(ESCROW_CONTRACT_ADDRESS),
-          tokenAdmin
-        );
+        try {
+          const token = await Token.at(
+            AztecAddress.fromString(TOKEN_CONTRACT_ADDRESS),
+            tokenAdmin
+          );
 
-        setContracts({ escrow, token });
-      } catch (err: any) {
-        console.log('Error: ', err);
-        const message: string = err.message;
-        generateContractErrorMessage(TOKEN_CONTRACT_ADDRESS, message);
+          const escrow = await Escrow.at(
+            AztecAddress.fromString(ESCROW_CONTRACT_ADDRESS),
+            tokenAdmin
+          );
+
+          setContracts({ escrow, token });
+        } catch (err: any) {
+          console.log('Error: ', err);
+          const message: string = err.message;
+          generateContractErrorMessage(TOKEN_CONTRACT_ADDRESS, message);
+        }
       }
-    }
-    setLoadingContracts(false);
-  };
+      setLoadingContracts(false);
+    },
+    []
+  );
 
   useEffect(() => {
     (async () => {
@@ -236,13 +239,9 @@ export const AztecProvider = ({ children }: { children: ReactNode }) => {
       );
       await loadContractInstances(tokenAdminWallet);
 
-      // const shieldWallet = new PopupWalletSdk(pxe);
-      // const storedWallet = shieldWallet.getAccount();
-      // console.log('Stored wallet: ', storedWallet);
-      // setWallet(storedWallet);
       setTokenAdmin(tokenAdminWallet);
     })();
-  }, [pxe]);
+  }, [loadContractInstances, pxe]);
 
   useEffect(() => {
     (async () => {
