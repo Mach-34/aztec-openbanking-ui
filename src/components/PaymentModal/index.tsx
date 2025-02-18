@@ -190,14 +190,13 @@ export default function PaymentModal({
   }, [claimingTokens, paymentFlowStep]);
 
   const validateInputs = () => {
-    return true;
-    // if (/^\d+(\.\d{2})?$/.test(amount)) {
-    //   // setInputValidationError(false);
-    //   return true;
-    // } else {
-    //   //setInputValidationError(true);
-    //   return false;
-    // }
+    if (/^\d+(\.\d{2})?$/.test(amount)) {
+      // setInputValidationError(false);
+      return true;
+    } else {
+      //setInputValidationError(true);
+      return false;
+    }
   };
 
   useEffect(() => {
