@@ -28,7 +28,7 @@ export default function DepositModal({
     if (validateInputs()) {
       setDepositing(true);
       try {
-        await onFinish(sortCode, currencyCode, Number(amount));
+        await onFinish(sortCode, CurrencyCode.GBP, Number(amount));
         onClose();
       } catch {
       } finally {

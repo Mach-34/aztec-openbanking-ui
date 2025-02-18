@@ -241,9 +241,7 @@ export default function PaymentModal({
       height={paymentFlowStep > -1 ? 80 : 45}
       onClose={onClose}
       open={open}
-      title={
-        paymentFlowStep > -1 ? `Sending $${amount} dollars` : `Prepare payment`
-      }
+      title={paymentFlowStep > -1 ? `Sending £${amount}` : `Prepare payment`}
     >
       <div className='flex justify-start w-full'>
         {paymentFlowStep > -1 ? (
