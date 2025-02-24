@@ -1,5 +1,6 @@
-import { Check } from 'lucide-react';
+import { Check, CircleHelp } from 'lucide-react';
 import Loader from './Loader';
+import { Tooltip } from 'react-tooltip';
 
 interface VerticalProgressChecklistProps {
   currentStep: number;
@@ -40,7 +41,7 @@ export default function VerticalProgressChecklist({
                 </div>
               )}
             </div>
-            <div className='ml-4 flex-grow'>
+            <div className='ml-4 flex flex-grow gap-2 items-center'>
               <span
                 className={`text-sm font-medium ${
                   index <= currentStep ? 'text-[#904FD1]' : 'text-gray-500'
@@ -48,6 +49,21 @@ export default function VerticalProgressChecklist({
               >
                 {step}
               </span>
+              {index === 0 && (
+                <>
+                  <CircleHelp data-tooltip-id='revolut-help' size={16} />
+                  <Tooltip clickable id='revolut-help'>
+                    Revolut sandbox setup{' '}
+                    <a
+                      href='https://youtu.be/8ecWLa5i7oQ'
+                      rel='no-referrer'
+                      target='_blank'
+                    >
+                      guide
+                    </a>
+                  </Tooltip>
+                </>
+              )}
             </div>
             {index === currentStep && <Loader size={16} />}
           </div>

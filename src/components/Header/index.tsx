@@ -6,6 +6,8 @@ import PXEBadge from './components/PXEBadge';
 import ContractSection from './components/ContractSection';
 import TokenBalanceSection from './components/TokenBalanceSection';
 import Loader from '../Loader';
+import { CircleHelp } from 'lucide-react';
+import { Tooltip } from 'react-tooltip';
 
 export default function Header(): JSX.Element {
   const { connectingWallet, connectWallet, disconnectWallet, pxe, wallet } =
@@ -32,7 +34,7 @@ export default function Header(): JSX.Element {
       <div className='flex gap-4'>
         <TokenBalanceSection />
         {pxe && (
-          <div>
+          <div className='flex gap-1 items-center'>
             <button
               className='flex gap-2 items-center ml-auto relative'
               disabled={connectingWallet}
@@ -56,6 +58,17 @@ export default function Header(): JSX.Element {
                 </div>
               )}
             </button>
+            <CircleHelp data-tooltip-id='obsidion-help' size={20} />
+            <Tooltip clickable id='obsidion-help'>
+              <div>Obsidion setup</div>
+              <a
+                href='https://youtu.be/jdA-T-B8jY4'
+                rel='no-referrer'
+                target='_blank'
+              >
+                guide
+              </a>
+            </Tooltip>
           </div>
         )}
       </div>
