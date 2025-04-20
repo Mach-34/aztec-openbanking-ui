@@ -11,6 +11,7 @@ import {
 import {
   AccountWalletWithSecretKey,
   AztecAddress,
+  createAztecNodeClient,
   createPXEClient,
   Fr,
   PXE,
@@ -19,16 +20,10 @@ import {
 import usePXEHealth from '../hooks/usePXEHealth';
 import { AZTEC_WALLET_LS_KEY } from '../utils/constants';
 import { getSingleKeyAccount } from '@aztec/accounts/single_key';
-import { ReownPopupWalletSdk } from '@shieldswap/wallet-sdk';
+import { AztecWalletSdk, obsidion } from '@shieldswap/wallet-sdk';
 import { Contract, Eip1193Account } from '@shieldswap/wallet-sdk/eip1193';
-import {
-  OpenbankingEscrowContract,
-  OpenbankingEscrowContractArtifact,
-} from '../artifacts';
-import {
-  TokenContract,
-  TokenContractArtifact,
-} from '@aztec/noir-contracts.js/Token';
+import { OpenbankingEscrowContract } from '../artifacts';
+import { TokenContract } from '@aztec/noir-contracts.js/Token';
 import { toast } from 'react-toastify';
 
 type AztecContextProps = {
@@ -117,11 +112,12 @@ export const AztecProvider = ({ children }: { children: ReactNode }) => {
     if (!pxe) return;
     setConnectingWallet(true);
     try {
-      const wcParams = {
-        projectId: WALLET_CONNECT_ID,
-      };
-      const obsidionPopup = new ReownPopupWalletSdk(pxe, wcParams);
-      const obsidionWallet = await obsidionPopup.connect();
+      const sdk = new AztecWalletSdk({
+        aztecNode: PXE_URL,
+        connectors: [obsidion({ projectId: WALLET_CONNECT_ID })],
+      });
+      await sdk.connect('obsidion');
+      const obsidionWallet = sdk.getAccount();
       setWallet(obsidionWallet);
     } catch {
       toast.error('Error connecting wallet');
@@ -196,11 +192,8 @@ export const AztecProvider = ({ children }: { children: ReactNode }) => {
   const loadContractInstances = useCallback(
     async (tokenAdmin: Eip1193Account) => {
       if (ESCROW_CONTRACT_ADDRESS && TOKEN_CONTRACT_ADDRESS) {
-        const Token = Contract.fromAztec(TokenContract, TokenContractArtifact);
-        const Escrow = Contract.fromAztec(
-          OpenbankingEscrowContract,
-          OpenbankingEscrowContractArtifact
-        );
+        const Token = Contract.fromAztec(TokenContract);
+        const Escrow = Contract.fromAztec(OpenbankingEscrowContract);
 
         try {
           const token = await Token.at(
@@ -234,8 +227,10 @@ export const AztecProvider = ({ children }: { children: ReactNode }) => {
         Fr.fromHexString(ADMIN_SECRET_KEY),
         0
       );
+      const aztecNode = createAztecNodeClient(PXE_URL);
       const tokenAdminWallet = Eip1193Account.fromAztec(
-        await tokenAdmin.waitSetup()
+        await tokenAdmin.waitSetup(),
+        aztecNode
       );
       await loadContractInstances(tokenAdminWallet);
 
