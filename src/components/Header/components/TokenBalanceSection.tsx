@@ -5,6 +5,7 @@ import usdc from '../../../assets/usdc.png';
 import { formatUSDC, toUSDCDecimals } from '../../../utils';
 import { toast } from 'react-toastify';
 import { Lock, LockOpen, Plus } from 'lucide-react';
+import { TokenContract } from '@aztec/noir-contracts.js/Token';
 
 export default function TokenBalanceSection() {
   const {
@@ -24,8 +25,12 @@ export default function TokenBalanceSection() {
     if (!tokenAdmin || !tokenContract || !wallet) return;
     try {
       setMinting(true);
-      const privateMintCall = tokenContract
-        .withAccount(tokenAdmin)
+      // const privateMintCall = tokenContract
+      //   .withAccount(tokenAdmin)
+      const privateMintCall = TokenContract.at(
+        tokenContract.address,
+        tokenAdmin
+      )
         .methods.mint_to_private(
           tokenAdmin.getAddress(),
           wallet.getAddress(),

@@ -142,13 +142,22 @@ export const AztecProvider = ({ children }: { children: ReactNode }) => {
 
   const fetchTokenBalances = useCallback(
     async (token: Contract<TokenContract>) => {
+      if (!pxe || !wallet) return;
       setFetchingTokenBalance(true);
-      const publicBalance = await token.methods
-        .balance_of_public(wallet!.getAddress())
+      const tokenAdmin = await getUnsafeSchnorrAccount(
+        pxe,
+        Fr.fromHexString(ADMIN_SECRET_KEY),
+        0
+      );
+      const publicBalance = await (
+        await TokenContract.at(token.address, await tokenAdmin.getWallet())
+      ).methods
+        .balance_of_public(wallet.getAddress())
         .simulate();
-
-      const privateBalance = await token.methods
-        .balance_of_private(wallet!.getAddress())
+      const privateBalance = await (
+        await TokenContract.at(token.address, await tokenAdmin.getWallet())
+      ).methods
+        .balance_of_public(wallet.getAddress())
         .simulate();
 
       setTokenBalance({
@@ -230,8 +239,9 @@ export const AztecProvider = ({ children }: { children: ReactNode }) => {
       );
       const aztecNode = createAztecNodeClient(PXE_URL);
       const tokenAdminWallet = Eip1193Account.fromAztec(
-        await tokenAdmin.waitSetup(),
-        aztecNode
+        await tokenAdmin.getWallet(),
+        aztecNode,
+        pxe
       );
       await loadContractInstances(tokenAdminWallet);
 
@@ -241,7 +251,7 @@ export const AztecProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     (async () => {
-      if (contracts && wallet) {
+      if (contracts) {
         await fetchTokenBalances(contracts.token);
       }
     })();

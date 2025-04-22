@@ -1229,7 +1229,7 @@
   resolved "https://registry.yarnpkg.com/@noir-lang/types/-/types-1.0.0-beta.1.tgz#4fe9062a8209c9e0987cc41c9506cc4423004b8f"
   integrity sha512-rcisXDdKNLA7mh0Ll9j3MGG5BP3W52K3Owr0+opJhs+4jHoAx1Gb5vGNG9s6nYb2i21VZMgOzKVvBd25ck0b9w==
 
-"@obsidion/bridge@0.4.2", "@obsidion/bridge@^0.4.2":
+"@obsidion/bridge@0.4.2":
   version "0.4.2"
   resolved "https://registry.yarnpkg.com/@obsidion/bridge/-/bridge-0.4.2.tgz#31ca96ed5fddcbfbd93529191fe324872acee23f"
   integrity sha512-1ABoakjbNtFvowH6UaxeZCJd2IzaOivvSbnzlEZALOkPDBOJuTL02vPq7NfaOY/Z90e/Nr386RtAth5196xZrA==
@@ -1237,8 +1237,10 @@
     "@noble/ciphers" "^1.2.1"
     "@noble/secp256k1" "^2.2.3"
 
-"@openbanking-nr/js-inputs@../openbanking-circuit/js":
-  version "1.0.5"
+"@openbanking-nr/js-inputs@^1.0.6":
+  version "1.0.6"
+  resolved "https://registry.yarnpkg.com/@openbanking-nr/js-inputs/-/js-inputs-1.0.6.tgz#197d120e749b7c47689f985efcbbca40e50ed186"
+  integrity sha512-uhz4HttL9lqy35jAbbxEq7b4y/qF+FbCWCyNzrj2fABNu3IYRZPaEUJq+TwDQEOyw6cq/LRqPUnsKNLCUnASVg==
   dependencies:
     "@aztec/accounts" "=0.85.0-alpha-testnet.2"
     "@aztec/noir-contracts.js" "=0.85.0-alpha-testnet.2"
