@@ -19,9 +19,9 @@ import {
 } from '@aztec/aztec.js';
 import usePXEHealth from '../hooks/usePXEHealth';
 import { AZTEC_WALLET_LS_KEY } from '../utils/constants';
-import { getSingleKeyAccount } from '@aztec/accounts/single_key';
-import { AztecWalletSdk, obsidion } from '@shieldswap/wallet-sdk';
-import { Contract, Eip1193Account } from '@shieldswap/wallet-sdk/eip1193';
+import { getUnsafeSchnorrAccount } from '@aztec/accounts/single_key';
+import { AztecWalletSdk, obsidion } from '@nemi-fi/wallet-sdk';
+import { Contract, Eip1193Account } from '@nemi-fi/wallet-sdk/eip1193';
 import { OpenbankingEscrowContract } from '../artifacts';
 import { TokenContract } from '@aztec/noir-contracts.js/Token';
 import { toast } from 'react-toastify';
@@ -84,6 +84,11 @@ const {
   VITE_APP_WALLET_CONNECT_ID: WALLET_CONNECT_ID,
 } = import.meta.env;
 
+const walletSdk = new AztecWalletSdk({
+  aztecNode: PXE_URL,
+  connectors: [obsidion({ walletUrl: 'https://app.obsidion.xyz' })],
+});
+
 export const AztecProvider = ({ children }: { children: ReactNode }) => {
   const [connectingWallet, setConnectingWallet] = useState<boolean>(false);
   const [contracts, setContracts] = useState<OpenbankingDemoContracts | null>(
@@ -112,12 +117,7 @@ export const AztecProvider = ({ children }: { children: ReactNode }) => {
     if (!pxe) return;
     setConnectingWallet(true);
     try {
-      const sdk = new AztecWalletSdk({
-        aztecNode: PXE_URL,
-        connectors: [obsidion({ projectId: WALLET_CONNECT_ID })],
-      });
-      await sdk.connect('obsidion');
-      const obsidionWallet = sdk.getAccount();
+      const obsidionWallet = await walletSdk.connect('obsidion');
       setWallet(obsidionWallet);
     } catch {
       toast.error('Error connecting wallet');
@@ -130,6 +130,7 @@ export const AztecProvider = ({ children }: { children: ReactNode }) => {
     setWaitingForPXE(true);
     const client = createPXEClient(PXE_URL);
     await waitForPXE(client);
+    console.log('Client: ', client);
     setPXE(client);
     setWaitingForPXE(false);
   };
@@ -222,7 +223,7 @@ export const AztecProvider = ({ children }: { children: ReactNode }) => {
     (async () => {
       if (!pxe) return;
       // check if registry admin exists and if not then register to pxe
-      const tokenAdmin = await getSingleKeyAccount(
+      const tokenAdmin = await getUnsafeSchnorrAccount(
         pxe,
         Fr.fromHexString(ADMIN_SECRET_KEY),
         0
