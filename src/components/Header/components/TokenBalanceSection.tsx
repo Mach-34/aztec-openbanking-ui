@@ -5,7 +5,9 @@ import usdc from '../../../assets/usdc.png';
 import { formatUSDC, toUSDCDecimals } from '../../../utils';
 import { toast } from 'react-toastify';
 import { Lock, LockOpen, Plus } from 'lucide-react';
-import { TokenContract } from '@aztec/noir-contracts.js/Token';
+import { AztecAddress, SponsoredFeePaymentMethod } from '@aztec/aztec.js';
+
+const { VITE_APP_FPC_ADDRESS: FPC_ADDRESS } = import.meta.env;
 
 export default function TokenBalanceSection() {
   const {
@@ -17,30 +19,32 @@ export default function TokenBalanceSection() {
     tokenContract,
     wallet,
   } = useAztec();
+
   const [minting, setMinting] = useState<boolean>(false);
 
   const MINT_AMOUNT = toUSDCDecimals(10n ** 7n);
 
   const mintUsdc = async () => {
-    if (!tokenAdmin || !tokenContract || !wallet) return;
+    if (!FPC_ADDRESS || !tokenAdmin || !tokenContract || !wallet) return;
     try {
       setMinting(true);
-      // const privateMintCall = tokenContract
-      //   .withAccount(tokenAdmin)
-      const privateMintCall = TokenContract.at(
-        tokenContract.address,
-        tokenAdmin
-      )
+      const paymentMethod = new SponsoredFeePaymentMethod(
+        AztecAddress.fromString(FPC_ADDRESS)
+      );
+
+      const privateMintCall = tokenContract
+        .withWallet(tokenAdmin)
         .methods.mint_to_private(
           tokenAdmin.getAddress(),
           wallet.getAddress(),
           MINT_AMOUNT
         )
-        .send();
+        .send({ fee: { paymentMethod } });
 
-      await tokenContract.methods
-        .mint_to_public(wallet.getAddress(), MINT_AMOUNT)
-        .send()
+      await tokenContract
+        .withWallet(tokenAdmin)
+        .methods.mint_to_public(wallet.getAddress(), MINT_AMOUNT)
+        .send({ fee: { paymentMethod } })
         .wait();
       await privateMintCall.wait();
       setTokenBalance((prev) => ({
