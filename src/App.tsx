@@ -99,7 +99,8 @@ function App() {
     currencyCode: string,
     amount: number
   ) => {
-    if (!escrowContract || !tokenContract || !wallet) return;
+    if (!escrowContract || !tokenContract || !tokenContractTest || !wallet)
+      return;
 
     const depositAmount = toUSDCDecimals(BigInt(amount));
 
@@ -112,18 +113,19 @@ function App() {
       );
 
       // create authwit for escrow to transfer from user's private balance
-      const executionPayload = await tokenContract.methods
+      const executionPayload = await tokenContractTest.methods
         .transfer_to_public(
           wallet.getAddress(),
           escrowContract.address,
           depositAmount,
-          0
+          0,
+          { registerContracts: [tokenContractTest] }
         )
         .request();
 
       const authWitness: IntentAction = {
         caller: escrowContract.address,
-        action: executionPayload.calls[0],
+        action: executionPayload,
       };
 
       await escrowContract
