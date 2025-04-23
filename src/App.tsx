@@ -40,13 +40,7 @@ const {
 } = import.meta.env;
 
 function App() {
-  const {
-    escrowContract,
-    setTokenBalance,
-    tokenContract,
-    tokenContractTest,
-    wallet,
-  } = useAztec();
+  const { escrowContract, setTokenBalance, tokenContract, wallet } = useAztec();
   const [orders, setOrders] = useState<Array<CreditorData>>([]);
   const [fetchingOrders, setFetchingOrders] = useState<boolean>(true);
   const [fetchingPositions, setFetchingTokenPositions] =

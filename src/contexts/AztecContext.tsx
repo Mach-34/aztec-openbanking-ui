@@ -97,7 +97,7 @@ export const AztecProvider = ({ children }: { children: ReactNode }) => {
   );
   const [fetchingTokenBalances, setFetchingTokenBalance] =
     useState<boolean>(true);
-  const [loadingContracts, setLoadingContracts] = useState<boolean>(false);
+  const [loadingContracts, setLoadingContracts] = useState<boolean>(true);
   const [pxe, setPXE] = useState<PXE | null>(null);
   const [tokenAdmin, setTokenAdmin] = useState<
     AccountWalletWithSecretKey | undefined
@@ -144,9 +144,12 @@ export const AztecProvider = ({ children }: { children: ReactNode }) => {
       const publicBalance = await token.methods
         .balance_of_public(wallet.getAddress())
         .simulate();
+      console.log('Public balance: ', publicBalance);
       const privateBalance = await token.methods
         .balance_of_public(wallet.getAddress())
         .simulate();
+
+      console.log('Private balance: ', privateBalance);
 
       setTokenBalance({
         private: privateBalance as bigint,
@@ -191,7 +194,6 @@ export const AztecProvider = ({ children }: { children: ReactNode }) => {
     async (tokenAdmin: AccountWalletWithSecretKey) => {
       if (ESCROW_CONTRACT_ADDRESS && TOKEN_CONTRACT_ADDRESS && pxe) {
         const Escrow = Contract.fromAztec(OpenbankingEscrowContract);
-        const Token = Contract.fromAztec(TokenContract);
 
         try {
           const aztecNode = createAztecNodeClient(PXE_URL);
