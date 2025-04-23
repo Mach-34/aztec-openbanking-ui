@@ -7,7 +7,7 @@ import DepositModal from './components/DepositModal';
 import { useAztec } from './contexts/AztecContext';
 import { Fr } from '@aztec/aztec.js';
 import { formatUSDC, toUSDCDecimals } from './utils';
-import { IntentAction } from '@shieldswap/wallet-sdk/eip1193';
+import { IntentAction } from '@nemi-fi/wallet-sdk/eip1193';
 import DataTable from './components/DataTable';
 import PaymentModal from './components/PaymentModal';
 import { CircleUserRound, Plus } from 'lucide-react';
@@ -40,7 +40,13 @@ const {
 } = import.meta.env;
 
 function App() {
-  const { escrowContract, setTokenBalance, tokenContract, wallet } = useAztec();
+  const {
+    escrowContract,
+    setTokenBalance,
+    tokenContract,
+    tokenContractTest,
+    wallet,
+  } = useAztec();
   const [orders, setOrders] = useState<Array<CreditorData>>([]);
   const [fetchingOrders, setFetchingOrders] = useState<boolean>(true);
   const [fetchingPositions, setFetchingTokenPositions] =
@@ -106,7 +112,7 @@ function App() {
       );
 
       // create authwit for escrow to transfer from user's private balance
-      const action = await tokenContract.methods
+      const executionPayload = await tokenContract.methods
         .transfer_to_public(
           wallet.getAddress(),
           escrowContract.address,
@@ -117,11 +123,12 @@ function App() {
 
       const authWitness: IntentAction = {
         caller: escrowContract.address,
-        action,
+        action: executionPayload.calls[0],
       };
 
-      await escrowContract.methods
-        .init_escrow_balance(
+      await escrowContract
+        .withAccount(wallet)
+        .methods.init_escrow_balance(
           sortcodeField,
           currencyCodeField,
           depositAmount,
@@ -235,7 +242,6 @@ function App() {
             sortCode: balance.sortCode,
           };
         });
-
       setOrders(formatted);
     } catch (err) {
       toast.error('Error occurred fetching orders');
@@ -283,7 +289,7 @@ function App() {
     if (!escrowContract || !tokenContract || !wallet) return;
     const convertedDecimals = toUSDCDecimals(amount);
     try {
-      const action = await tokenContract.methods
+      const executionPayload = await tokenContract.methods
         .transfer_to_public(
           wallet.getAddress(),
           escrowContract.address,
@@ -294,7 +300,7 @@ function App() {
 
       const authWitness: IntentAction = {
         caller: escrowContract.address,
-        action,
+        action: executionPayload.calls[0],
       };
 
       await escrowContract
