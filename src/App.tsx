@@ -99,8 +99,7 @@ function App() {
     currencyCode: string,
     amount: number
   ) => {
-    if (!escrowContract || !tokenContract || !tokenContractTest || !wallet)
-      return;
+    if (!escrowContract || !tokenContract || !wallet) return;
 
     const depositAmount = toUSDCDecimals(BigInt(amount));
 
@@ -113,19 +112,18 @@ function App() {
       );
 
       // create authwit for escrow to transfer from user's private balance
-      const executionPayload = await tokenContractTest.methods
+      const executionPayload = await tokenContract.methods
         .transfer_to_public(
           wallet.getAddress(),
           escrowContract.address,
           depositAmount,
-          0,
-          { registerContracts: [tokenContractTest] }
+          0
         )
         .request();
 
       const authWitness: IntentAction = {
         caller: escrowContract.address,
-        action: executionPayload,
+        action: executionPayload.calls[0],
       };
 
       await escrowContract
@@ -141,51 +139,51 @@ function App() {
         .wait();
 
       // update token balance
-      // setTokenBalance((prev) => ({
-      //   ...prev,
-      //   private: prev.private - depositAmount,
-      // }));
+      setTokenBalance((prev) => ({
+        ...prev,
+        private: prev.private - depositAmount,
+      }));
 
       // compute commitmentment and post to DB
-      // const commitment = await poseidon2Hash([
-      //   sortcodeField,
-      //   currencyCodeField,
-      // ]);
+      const commitment = await poseidon2Hash([
+        sortcodeField,
+        currencyCodeField,
+      ]);
 
       // update positions
-      // setPositions([
-      //   {
-      //     balance: depositAmount,
-      //     commitment: commitment.toBigInt(),
-      //     currency: 'GBP',
-      //     withdrawable_at: 0n,
-      //     withdrawable_balance: 0n,
-      //   },
-      // ]);
+      setPositions([
+        {
+          balance: depositAmount,
+          commitment: commitment.toBigInt(),
+          currency: 'GBP',
+          withdrawable_at: 0n,
+          withdrawable_balance: 0n,
+        },
+      ]);
 
       // store commitment on DB
-      // await fetch(`${SERVER_URL}/commitment`, {
-      //   body: JSON.stringify({
-      //     sortCode,
-      //     commitment: commitment.toBigInt().toString(),
-      //   }),
-      //   headers: {
-      //     'content-type': 'application/json',
-      //     'ngrok-skip-browser-warning': '69420',
-      //   },
-      //   method: 'POST',
-      // });
+      await fetch(`${SERVER_URL}/commitment`, {
+        body: JSON.stringify({
+          sortCode,
+          commitment: commitment.toBigInt().toString(),
+        }),
+        headers: {
+          'content-type': 'application/json',
+          'ngrok-skip-browser-warning': '69420',
+        },
+        method: 'POST',
+      });
 
-      // // set order
-      // setOrders((prev) => {
-      //   const order: CreditorData = {
-      //     balance: depositAmount,
-      //     commitment: commitment.toBigInt(),
-      //     currency: CurrencyCode.GBP,
-      //     sortCode,
-      //   };
-      //   return [...prev, order];
-      // });
+      // set order
+      setOrders((prev) => {
+        const order: CreditorData = {
+          balance: depositAmount,
+          commitment: commitment.toBigInt(),
+          currency: CurrencyCode.GBP,
+          sortCode,
+        };
+        return [...prev, order];
+      });
 
       toast.success('Succesfully initialized provider balance');
     } catch (err) {

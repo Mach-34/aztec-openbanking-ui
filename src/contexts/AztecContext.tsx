@@ -41,7 +41,6 @@ type AztecContextProps = {
   tokenAdmin: AccountWalletWithSecretKey | undefined;
   tokenBalance: TokenBalance;
   tokenContract: TokenContract | undefined;
-  tokenContractTest: Contract<TokenContract> | undefined;
   waitingForPXE: boolean;
   wallet: Account | undefined;
 };
@@ -59,7 +58,6 @@ const DEFAULT_AZTEC_CONTEXT_PROPS = {
   tokenAdmin: undefined,
   tokenBalance: { private: 0n, public: 0n },
   tokenContract: undefined,
-  tokenContractTest: undefined,
   waitingForPXE: false,
   wallet: undefined,
 };
@@ -71,7 +69,6 @@ const AztecContext = createContext<AztecContextProps>(
 type OpenbankingDemoContracts = {
   escrow: Contract<OpenbankingEscrowContract>;
   token: TokenContract;
-  tokenContractTest: Contract<TokenContract>;
 };
 
 type TokenBalance = {
@@ -213,12 +210,8 @@ export const AztecProvider = ({ children }: { children: ReactNode }) => {
             AztecAddress.fromString(ESCROW_CONTRACT_ADDRESS),
             eipAccount
           );
-          const tokenContractTest = await Token.at(
-            AztecAddress.fromString(TOKEN_CONTRACT_ADDRESS),
-            eipAccount
-          );
 
-          await setContracts({ escrow, token, tokenContractTest });
+          setContracts({ escrow, token });
         } catch (err: any) {
           console.log('Error: ', err);
           const message: string = err.message;
@@ -274,7 +267,6 @@ export const AztecProvider = ({ children }: { children: ReactNode }) => {
         tokenAdmin,
         tokenBalance,
         tokenContract: contracts?.token,
-        tokenContractTest: contracts?.tokenContractTest,
         waitingForPXE,
         wallet,
       }}
