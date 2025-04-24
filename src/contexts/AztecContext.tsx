@@ -144,12 +144,9 @@ export const AztecProvider = ({ children }: { children: ReactNode }) => {
       const publicBalance = await token.methods
         .balance_of_public(wallet.getAddress())
         .simulate();
-      console.log('Public balance: ', publicBalance);
       const privateBalance = await token.methods
-        .balance_of_public(wallet.getAddress())
+        .balance_of_private(wallet.getAddress())
         .simulate();
-
-      console.log('Private balance: ', privateBalance);
 
       setTokenBalance({
         private: privateBalance as bigint,

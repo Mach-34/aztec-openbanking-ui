@@ -1127,10 +1127,10 @@
   resolved "https://registry.yarnpkg.com/@msgpackr-extract/msgpackr-extract-win32-x64/-/msgpackr-extract-win32-x64-3.0.3.tgz#0aa5502d547b57abfc4ac492de68e2006e417242"
   integrity sha512-x0fWaQtYp4E6sktbsdAqnehxDgEc/VwM7uLsRCYWaiGu0ykYdZPiS8zCWdnjHwyiumousxfBm4SO31eXqwEZhQ==
 
-"@nemi-fi/wallet-sdk@=0.85.0-next.1":
-  version "0.85.0-next.1"
-  resolved "https://registry.yarnpkg.com/@nemi-fi/wallet-sdk/-/wallet-sdk-0.85.0-next.1.tgz#90c872311cc24a1c2349ffeb5fde4da660e6375f"
-  integrity sha512-LE/3GsgHEdVskoyrZBJY92yBJPXKWb7QDAgjcf8foCTsH49g2PcfyPjvM8PcdqQP74DHNUUlnxKuVJxVGBPc9Q==
+"@nemi-fi/wallet-sdk@=0.85.0-next.3":
+  version "0.85.0-next.3"
+  resolved "https://registry.yarnpkg.com/@nemi-fi/wallet-sdk/-/wallet-sdk-0.85.0-next.3.tgz#4049c4443adbfc86e87c0f4f113e5f24ae2dfea8"
+  integrity sha512-F/WdOsrT23A9BE3eNzl7ot22D1kf0+QHTtToXXhyM5T0xEM/uen7ZFR6NiDCvn0gpkYgIhbFW3S/MVpYHvqnDQ==
   dependencies:
     "@aztec/aztec.js" "0.85.0-alpha-testnet.2"
     "@aztec/constants" "0.85.0-alpha-testnet.2"
