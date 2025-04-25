@@ -7,7 +7,7 @@ import DepositModal from './components/DepositModal';
 import { useAztec } from './contexts/AztecContext';
 import { Fr } from '@aztec/aztec.js';
 import { formatUSDC, toUSDCDecimals } from './utils';
-import { IntentAction } from '@shieldswap/wallet-sdk/eip1193';
+import { IntentAction } from '@nemi-fi/wallet-sdk/eip1193';
 import DataTable from './components/DataTable';
 import PaymentModal from './components/PaymentModal';
 import { CircleUserRound, Plus } from 'lucide-react';
@@ -106,7 +106,7 @@ function App() {
       );
 
       // create authwit for escrow to transfer from user's private balance
-      const action = await tokenContract.methods
+      const executionPayload = await tokenContract.methods
         .transfer_to_public(
           wallet.getAddress(),
           escrowContract.address,
@@ -117,7 +117,7 @@ function App() {
 
       const authWitness: IntentAction = {
         caller: escrowContract.address,
-        action,
+        action: executionPayload.calls[0],
       };
 
       await escrowContract
@@ -236,7 +236,6 @@ function App() {
             sortCode: balance.sortCode,
           };
         });
-
       setOrders(formatted);
     } catch (err) {
       toast.error('Error occurred fetching orders');
@@ -284,7 +283,7 @@ function App() {
     if (!escrowContract || !tokenContract || !wallet) return;
     const convertedDecimals = toUSDCDecimals(amount);
     try {
-      const action = await tokenContract.methods
+      const executionPayload = await tokenContract.methods
         .transfer_to_public(
           wallet.getAddress(),
           escrowContract.address,
@@ -295,7 +294,7 @@ function App() {
 
       const authWitness: IntentAction = {
         caller: escrowContract.address,
-        action,
+        action: executionPayload.calls[0],
       };
 
       await escrowContract
@@ -417,7 +416,7 @@ function App() {
               )
             )}
           </div>
-          {!fetchingPositions && !positions.length && (
+          {wallet && !fetchingPositions && !positions.length && (
             <button
               className='flex gap-2 items-center px-2 py-1'
               onClick={() => setShowDepositModal(true)}
