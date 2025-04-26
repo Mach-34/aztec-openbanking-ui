@@ -15,7 +15,6 @@ import {
   createPXEClient,
   Fq,
   Fr,
-  getContractInstanceFromDeployParams,
   PXE,
   waitForPXE,
 } from '@aztec/aztec.js';
@@ -209,17 +208,7 @@ export const AztecProvider = ({ children }: { children: ReactNode }) => {
       if (!pxe) return;
 
       // register contracts
-      // const adminWallet = await handleContractRegistration();
-
-      const tokenAdmin = await getSchnorrAccount(
-        pxe!,
-        Fr.fromHexString(ADMIN_SECRET_KEY),
-        Fq.fromHexString(ADMIN_SIGNING_KEY),
-        0
-      );
-
-      const adminWallet = await tokenAdmin.getWallet();
-
+      const adminWallet = await handleContractRegistration();
       await loadContractInstances(adminWallet);
       setTokenAdmin(adminWallet);
     })();
