@@ -15,18 +15,27 @@ import {
   createPXEClient,
   Fq,
   Fr,
+  getContractInstanceFromDeployParams,
   PXE,
   waitForPXE,
 } from '@aztec/aztec.js';
-import usePXEHealth from '../hooks/usePXEHealth';
-import { AZTEC_WALLET_LS_KEY } from '../utils/constants';
+// import { createPXEService } from '@aztec/pxe/client/lazy';
+import usePXEHealth from '../../hooks/usePXEHealth';
+import { AZTEC_WALLET_LS_KEY } from '../../utils/constants';
 import { getSchnorrAccount } from '@aztec/accounts/schnorr';
 import { Account, AztecWalletSdk, obsidion } from '@nemi-fi/wallet-sdk';
 import { useAccount } from '@nemi-fi/wallet-sdk/react';
 import { Contract, Eip1193Account } from '@nemi-fi/wallet-sdk/eip1193';
-import { OpenbankingEscrowContract } from '../artifacts';
+import { OpenbankingEscrowContract } from '../../artifacts';
 import { TokenContract } from '@aztec/noir-contracts.js/Token';
 import { toast } from 'react-toastify';
+import { generateContractErrorMessage } from './helpers';
+import { DEFAULT_AZTEC_CONTEXT_PROPS, TokenBalance } from './constants';
+
+type OpenbankingDemoContracts = {
+  escrow: Contract<OpenbankingEscrowContract>;
+  token: TokenContract;
+};
 
 type AztecContextProps = {
   connectWallet: () => void;
@@ -45,47 +54,22 @@ type AztecContextProps = {
   wallet: Account | undefined;
 };
 
-const DEFAULT_AZTEC_CONTEXT_PROPS = {
-  connectWallet: () => null,
-  connectingWallet: false,
-  connectToPXE: () => null,
-  disconnectWallet: () => null,
-  escrowContract: undefined,
-  fetchingTokenBalances: false,
-  loadingContracts: false,
-  pxe: null,
-  setTokenBalance: (() => {}) as Dispatch<SetStateAction<TokenBalance>>,
-  tokenAdmin: undefined,
-  tokenBalance: { private: 0n, public: 0n },
-  tokenContract: undefined,
-  waitingForPXE: false,
-  wallet: undefined,
-};
-
 const AztecContext = createContext<AztecContextProps>(
   DEFAULT_AZTEC_CONTEXT_PROPS
 );
-
-type OpenbankingDemoContracts = {
-  escrow: Contract<OpenbankingEscrowContract>;
-  token: TokenContract;
-};
-
-type TokenBalance = {
-  private: bigint;
-  public: bigint;
-};
 
 const {
   VITE_APP_TOKEN_ADMIN_SECRET_KEY: ADMIN_SECRET_KEY,
   VITE_APP_TOKEN_ADMIN_SIGNING_KEY: ADMIN_SIGNING_KEY,
   VITE_APP_ESCROW_CONTRACT_ADDRESS: ESCROW_CONTRACT_ADDRESS,
+  VITE_APP_AZTEC_NODE_URL: AZTEC_NODE_URL,
+  VITE_APP_IS_AZTEC_TESTNET: IS_AZTEC_TESTNET,
   VITE_APP_PXE_URL: PXE_URL,
   VITE_APP_TOKEN_CONTRACT_ADDRESS: TOKEN_CONTRACT_ADDRESS,
 } = import.meta.env;
 
 const walletSdk = new AztecWalletSdk({
-  aztecNode: PXE_URL,
+  aztecNode: AZTEC_NODE_URL,
   connectors: [obsidion({ walletUrl: 'https://app.obsidion.xyz' })],
 });
 
@@ -157,34 +141,32 @@ export const AztecProvider = ({ children }: { children: ReactNode }) => {
     [wallet]
   );
 
-  const generateContractErrorMessage = (
-    message: string,
-    storedEscrowAddress: string
-  ) => {
-    const contractInstanceError = message.indexOf(
-      `has not been registered in the wallet's PXE`
+  const handleContractRegistration = async () => {
+    const tokenAdmin = await getSchnorrAccount(
+      pxe!,
+      Fr.fromHexString(ADMIN_SECRET_KEY),
+      Fq.fromHexString(ADMIN_SIGNING_KEY),
+      0
     );
-    if (contractInstanceError !== -1) {
-      const contractAddressEndIndex = contractInstanceError - 2;
-      const contractAddressStartIndex =
-        message.lastIndexOf(' ', contractAddressEndIndex) + 1;
-      const contractAddress = message.slice(
-        contractAddressStartIndex,
-        contractAddressEndIndex + 1
-      );
 
-      if (contractAddress === storedEscrowAddress) {
-        toast.error(
-          `Saved registry contract at ${contractAddress} not found. Please redeploy`
-        );
-      } else {
-        toast.error(
-          `Saved USDC contract at ${contractAddress} not found. Please redeploy`
-        );
-      }
+    let adminWallet: AccountWalletWithSecretKey;
+    if (IS_AZTEC_TESTNET) {
+      adminWallet = await tokenAdmin.register();
+
+      // register token
+      // const tokenInstance = await getContractInstanceFromDeployParams(
+      //   TokenContract.artifact,
+      //   { constructorArgs: [adminWallet.getAddress(), 'USDC', 'Aztec USDC', 6] }
+      // );
+
+      // await pxe!.registerContract({
+      //   instance: tokenInstance,
+      //   artifact: TokenContract.artifact,
+      // });
     } else {
-      toast.error('Error occurred connecting to contracts');
+      adminWallet = await tokenAdmin.waitSetup();
     }
+    return adminWallet;
   };
 
   const loadContractInstances = useCallback(
@@ -193,7 +175,7 @@ export const AztecProvider = ({ children }: { children: ReactNode }) => {
         const Escrow = Contract.fromAztec(OpenbankingEscrowContract);
 
         try {
-          const aztecNode = createAztecNodeClient(PXE_URL);
+          const aztecNode = createAztecNodeClient(AZTEC_NODE_URL);
           const eipAccount = Eip1193Account.fromAztec(
             tokenAdmin,
             aztecNode,
@@ -225,16 +207,20 @@ export const AztecProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     (async () => {
       if (!pxe) return;
-      // check if registry admin exists and if not then register to pxe
+
+      // register contracts
+      // const adminWallet = await handleContractRegistration();
+
       const tokenAdmin = await getSchnorrAccount(
-        pxe,
+        pxe!,
         Fr.fromHexString(ADMIN_SECRET_KEY),
         Fq.fromHexString(ADMIN_SIGNING_KEY),
         0
       );
-      const adminWallet = await tokenAdmin.getWallet();
-      await loadContractInstances(adminWallet);
 
+      const adminWallet = await tokenAdmin.getWallet();
+
+      await loadContractInstances(adminWallet);
       setTokenAdmin(adminWallet);
     })();
   }, [loadContractInstances, pxe]);

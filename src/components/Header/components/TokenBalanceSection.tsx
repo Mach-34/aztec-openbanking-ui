@@ -6,6 +6,7 @@ import { formatUSDC, toUSDCDecimals } from '../../../utils';
 import { toast } from 'react-toastify';
 import { Lock, LockOpen, Plus } from 'lucide-react';
 import { AztecAddress, SponsoredFeePaymentMethod } from '@aztec/aztec.js';
+import { AZTEC_TX_TIMEOUT } from '../../../utils/constants';
 
 const { VITE_APP_FPC_ADDRESS: FPC_ADDRESS } = import.meta.env;
 
@@ -45,8 +46,8 @@ export default function TokenBalanceSection() {
         .withWallet(tokenAdmin)
         .methods.mint_to_public(wallet.getAddress(), MINT_AMOUNT)
         .send({ fee: { paymentMethod } })
-        .wait();
-      await privateMintCall.wait();
+        .wait({ timeout: AZTEC_TX_TIMEOUT });
+      await privateMintCall.wait({ timeout: AZTEC_TX_TIMEOUT });
       setTokenBalance((prev) => ({
         public: prev.public + MINT_AMOUNT,
         private: prev.private + MINT_AMOUNT,
