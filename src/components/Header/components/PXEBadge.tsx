@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { useAztec } from '../../../contexts/AztecContext';
 import Loader from '../../Loader';
 
-const { VITE_APP_PXE_URL: PXE_URL } = import.meta.env;
+const { VITE_APP_AZTEC_NODE_URL: AZTEC_NODE_URL } = import.meta.env;
 
 export default function PXEBadge() {
   const { connectToPXE, pxe, waitingForPXE } = useAztec();
@@ -22,10 +22,10 @@ export default function PXEBadge() {
   return (
     <div className={badgeClass}>
       {waitingForPXE
-        ? `Waiting for PXE at ${PXE_URL}...`
+        ? `Waiting for Aztec Node at ${AZTEC_NODE_URL}...`
         : pxe
-        ? 'Connected to PXE'
-        : `Connection to PXE at ${PXE_URL} lost`}
+        ? 'PXE Connected'
+        : `Lost connection at ${AZTEC_NODE_URL}`}
       {waitingForPXE && <Loader size={12} />}
       {!pxe && !waitingForPXE && (
         <button

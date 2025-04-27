@@ -25,5 +25,8 @@ const nodePolyfillsFix = (options?: PolyfillOptions | undefined): Plugin => {
 
 // https://vite.dev/config/
 export default defineConfig({
+  optimizeDeps: {
+    exclude: ["@aztec/noir-acvm_js", "@aztec/noir-noirc_abi"],
+  },
   plugins: [nodePolyfillsFix({ include: ["buffer", "crypto", "process", "path", "stream", "timers", "tty", "util"] }), react(), tailwindcss(), topLevelAwait(),],
 })

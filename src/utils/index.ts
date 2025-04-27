@@ -1,3 +1,6 @@
+import { AztecAddress, ContractInstanceWithAddress, getContractInstanceFromDeployParams, Fr, PXE } from "@aztec/aztec.js";
+import { SponsoredFPCContract } from '@aztec/noir-contracts.js/SponsoredFPC';
+
 export const formatUSDC = (val: bigint) => {
 
     const { decimal, integer } = fromUSDCDecimals(val);

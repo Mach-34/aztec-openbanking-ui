@@ -270,7 +270,7 @@
     lodash.omit "^4.5.0"
     tslib "^2.4.0"
 
-"@aztec/pxe@0.85.0-alpha-testnet.2":
+"@aztec/pxe@0.85.0-alpha-testnet.2", "@aztec/pxe@=0.85.0-alpha-testnet.2":
   version "0.85.0-alpha-testnet.2"
   resolved "https://registry.yarnpkg.com/@aztec/pxe/-/pxe-0.85.0-alpha-testnet.2.tgz#139542ed19af406c3ddc3402ab55a211ae107ffc"
   integrity sha512-hXR/6JnsBdP8DlXYy+75gQH6L1+UxVhG7mJncGWbE0HdectD+XSJ5ZDJntK/u81rUpCYARjOJ1BITGmAEVRMGg==
@@ -1489,13 +1489,14 @@
     debug "^4.3.4"
     ws "^8.16.0"
 
-"@openbanking-nr/js-inputs@^1.0.6":
-  version "1.0.6"
-  resolved "https://registry.yarnpkg.com/@openbanking-nr/js-inputs/-/js-inputs-1.0.6.tgz#197d120e749b7c47689f985efcbbca40e50ed186"
-  integrity sha512-uhz4HttL9lqy35jAbbxEq7b4y/qF+FbCWCyNzrj2fABNu3IYRZPaEUJq+TwDQEOyw6cq/LRqPUnsKNLCUnASVg==
+"@openbanking-nr/js-inputs@^1.0.7":
+  version "1.0.7"
+  resolved "https://registry.yarnpkg.com/@openbanking-nr/js-inputs/-/js-inputs-1.0.7.tgz#afb967c6a2ae9efaf1afe42f5d60b52a1a5dfb42"
+  integrity sha512-hQ+Vh22pqTI/ud7XGcGFu+DJq7HIOlQQXSIdjRjiNtLxs1y2u0yZLsZPPmxK7rq95QjxVsSHJfNxG3/9dlt5fw==
   dependencies:
     "@aztec/accounts" "=0.85.0-alpha-testnet.2"
     "@aztec/noir-contracts.js" "=0.85.0-alpha-testnet.2"
+    "@aztec/pxe" "=0.85.0-alpha-testnet.2"
     "@mach-34/noir-bignum-paramgen" "^1.1.2"
     "@noir-lang/noir_js" "=1.0.0-beta.1"
     "@noir-lang/noirc_abi" "=1.0.0-beta.1"
