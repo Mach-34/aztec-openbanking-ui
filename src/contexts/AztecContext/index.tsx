@@ -9,16 +9,12 @@ import {
   ReactNode,
 } from 'react';
 import {
-  AccountWalletWithSecretKey,
   AztecAddress,
+  AztecNode,
   createAztecNodeClient,
-  Fq,
-  Fr,
-  PXE,
 } from '@aztec/aztec.js';
-import usePXEHealth from '../../hooks/usePXEHealth';
+import useAztecNodeHealth from '../../hooks/useAztecNodeHealth';
 import { AZTEC_WALLET_LS_KEY } from '../../utils/constants';
-import { getSchnorrAccount } from '@aztec/accounts/schnorr';
 import { Account, AztecWalletSdk, obsidion } from '@nemi-fi/wallet-sdk';
 import { useAccount } from '@nemi-fi/wallet-sdk/react';
 import { Contract } from '@nemi-fi/wallet-sdk/eip1193';
@@ -27,8 +23,6 @@ import { TokenContract } from '@aztec/noir-contracts.js/Token';
 import { toast } from 'react-toastify';
 import { generateContractErrorMessage } from './helpers';
 import { DEFAULT_AZTEC_CONTEXT_PROPS, TokenBalance } from './constants';
-import { getSponsoredFPCInstance } from '@openbanking-nr/js-inputs';
-import { SponsoredFPCContract } from '@aztec/noir-contracts.js/SponsoredFPC';
 
 type OpenbankingDemoContracts = {
   escrow: Contract<OpenbankingEscrowContract>;
@@ -36,6 +30,7 @@ type OpenbankingDemoContracts = {
 };
 
 type AztecContextProps = {
+  connectedToNode: boolean;
   connectWallet: () => void;
   connectingWallet: boolean;
   disconnectWallet: () => void;
@@ -43,7 +38,6 @@ type AztecContextProps = {
   fetchingTokenBalances: boolean;
   loadingContracts: boolean;
   setTokenBalance: Dispatch<SetStateAction<TokenBalance>>;
-  tokenAdmin: AccountWalletWithSecretKey | undefined;
   tokenBalance: TokenBalance;
   tokenContract: Contract<TokenContract> | undefined;
   wallet: Account | undefined;
@@ -54,11 +48,8 @@ const AztecContext = createContext<AztecContextProps>(
 );
 
 const {
-  VITE_APP_TOKEN_ADMIN_SECRET_KEY: ADMIN_SECRET_KEY,
-  VITE_APP_TOKEN_ADMIN_SIGNING_KEY: ADMIN_SIGNING_KEY,
   VITE_APP_ESCROW_CONTRACT_ADDRESS: ESCROW_CONTRACT_ADDRESS,
   VITE_APP_AZTEC_NODE_URL: AZTEC_NODE_URL,
-  VITE_APP_IS_AZTEC_TESTNET: IS_AZTEC_TESTNET,
   VITE_APP_TOKEN_CONTRACT_ADDRESS: TOKEN_CONTRACT_ADDRESS,
 } = import.meta.env;
 
@@ -70,6 +61,7 @@ const walletSdk = new AztecWalletSdk({
 
 export const AztecProvider = ({ children }: { children: ReactNode }) => {
   const wallet = useAccount(walletSdk);
+  const [connectedToNode, setConnectedToNode] = useState<boolean>(false);
   const [connectingWallet, setConnectingWallet] = useState<boolean>(false);
   const [contracts, setContracts] = useState<OpenbankingDemoContracts | null>(
     null
@@ -77,17 +69,14 @@ export const AztecProvider = ({ children }: { children: ReactNode }) => {
   const [fetchingTokenBalances, setFetchingTokenBalance] =
     useState<boolean>(true);
   const [loadingContracts, setLoadingContracts] = useState<boolean>(true);
-  const [tokenAdmin, setTokenAdmin] = useState<
-    AccountWalletWithSecretKey | undefined
-  >(undefined);
   const [tokenBalance, setTokenBalance] = useState<TokenBalance>(
     DEFAULT_AZTEC_CONTEXT_PROPS.tokenBalance
   );
 
   // monitor PXE connection
-  // usePXEHealth(pxe, () => {
-  //   setPXE(null);
-  // });
+  useAztecNodeHealth(aztecNode, () => {
+    setConnectedToNode(false);
+  });
 
   const connectWallet = async () => {
     setConnectingWallet(true);
@@ -129,48 +118,6 @@ export const AztecProvider = ({ children }: { children: ReactNode }) => {
     [wallet]
   );
 
-  // const handleContractRegistration = async () => {
-  //   const tokenAdmin = await getSchnorrAccount(
-  //     pxe!,
-  //     Fr.fromHexString(ADMIN_SECRET_KEY),
-  //     Fq.fromHexString(ADMIN_SIGNING_KEY),
-  //     0
-  //   );
-
-  //   let adminWallet: AccountWalletWithSecretKey;
-  //   if (IS_AZTEC_TESTNET) {
-  //     adminWallet = await tokenAdmin.register();
-  //     await pxe?.registerSender(adminWallet.getAddress());
-
-  //     // register token and escrow contracts
-  //     const tokenInstance = await aztecNode.getContract(TOKEN_CONTRACT_ADDRESS);
-  //     const escrowInstance = await aztecNode.getContract(
-  //       ESCROW_CONTRACT_ADDRESS
-  //     );
-  //     const fpcInstance = await getSponsoredFPCInstance();
-
-  //     if (!tokenInstance || !escrowInstance) {
-  //       toast.error('Contract instances not on testnet');
-  //       throw Error;
-  //     }
-  //     await pxe!.registerContract({
-  //       instance: tokenInstance,
-  //       artifact: TokenContract.artifact,
-  //     });
-  //     await pxe!.registerContract({
-  //       instance: escrowInstance,
-  //       artifact: OpenbankingEscrowContract.artifact,
-  //     });
-  //     await pxe!.registerContract({
-  //       instance: fpcInstance,
-  //       artifact: SponsoredFPCContract.artifact,
-  //     });
-  //   } else {
-  //     adminWallet = await tokenAdmin.waitSetup();
-  //   }
-  //   return adminWallet;
-  // };
-
   const loadContractInstances = async () => {
     if (ESCROW_CONTRACT_ADDRESS && TOKEN_CONTRACT_ADDRESS && wallet) {
       const Escrow = Contract.fromAztec(OpenbankingEscrowContract);
@@ -196,15 +143,6 @@ export const AztecProvider = ({ children }: { children: ReactNode }) => {
     setLoadingContracts(false);
   };
 
-  // useEffect(() => {
-  //   (async () => {
-  //     if (!pxe) return;
-
-  //     // register contracts
-  //     // const adminWallet = await handleContractRegistration();
-  //   })();
-  // }, [loadContractInstances, pxe]);
-
   useEffect(() => {
     (async () => {
       if (wallet) {
@@ -221,9 +159,21 @@ export const AztecProvider = ({ children }: { children: ReactNode }) => {
     })();
   }, [contracts]);
 
+  useEffect(() => {
+    (async () => {
+      try {
+        await aztecNode.getNodeInfo();
+        setConnectedToNode(true);
+      } catch {
+        toast.error('Not able to connect to Aztec Node');
+      }
+    })();
+  }, [aztecNode]);
+
   return (
     <AztecContext.Provider
       value={{
+        connectedToNode,
         connectingWallet,
         connectWallet,
         disconnectWallet,
@@ -231,7 +181,6 @@ export const AztecProvider = ({ children }: { children: ReactNode }) => {
         fetchingTokenBalances,
         loadingContracts,
         setTokenBalance,
-        tokenAdmin,
         tokenBalance,
         tokenContract: contracts?.token,
         wallet,

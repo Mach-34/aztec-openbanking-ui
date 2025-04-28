@@ -4,40 +4,42 @@ import Loader from '../../Loader';
 
 const { VITE_APP_AZTEC_NODE_URL: AZTEC_NODE_URL } = import.meta.env;
 
-export default function PXEBadge() {
-  // const badgeClass = useMemo((): string => {
-  //   let badgeColor = '';
-  //   if (waitingForPXE) {
-  //     badgeColor = 'border-yellow-500 text-yellow-500';
-  //   } else {
-  //     badgeColor = pxe
-  //       ? 'border-green-500 text-green-500'
-  //       : 'border-red-500 text-red-500';
-  //   }
-  //   return `border flex gap-2 items-center px-2 py-1 rounded-full text-xs ${badgeColor}`;
-  // }, [pxe, waitingForPXE]);
+export default function NodeBadge() {
+  const { connectedToNode } = useAztec();
 
-  return <div>Todo</div>;
+  const waitingForPXE = false;
 
-  // return (
-  //   <div className={badgeClass}>
-  //     {waitingForPXE
-  //       ? `Waiting for Aztec Node at ${AZTEC_NODE_URL}...`
-  //       : pxe
-  //       ? 'PXE Connected'
-  //       : `Lost connection at ${AZTEC_NODE_URL}`}
-  //     {waitingForPXE && <Loader size={12} />}
-  //     {!pxe && !waitingForPXE && (
-  //       <button
-  //         className='bg-red-500 py-0.5 px-1 rounded-full text-white text-[10px]'
-  //         onClick={() => connectToPXE()}
-  //       >
-  //         Reconnect
-  //       </button>
-  //     )}
-  //     {pxe && (
-  //       <div className='animate-pulse bg-green-500 rounded-full h-1.5 w-1.5' />
-  //     )}
-  //   </div>
-  // );
+  const badgeClass = useMemo((): string => {
+    let badgeColor = '';
+    if (waitingForPXE) {
+      badgeColor = 'border-yellow-500 text-yellow-500';
+    } else {
+      badgeColor = connectedToNode
+        ? 'border-green-500 text-green-500'
+        : 'border-red-500 text-red-500';
+    }
+    return `border flex gap-2 items-center px-2 py-1 rounded-full text-xs ${badgeColor}`;
+  }, [connectedToNode, waitingForPXE]);
+
+  return (
+    <div className={badgeClass}>
+      {waitingForPXE
+        ? `Waiting for Aztec Node at ${AZTEC_NODE_URL}...`
+        : connectedToNode
+        ? 'Connected to Node'
+        : `Lost connection at ${AZTEC_NODE_URL}`}
+      {waitingForPXE && <Loader size={12} />}
+      {!connectedToNode && !waitingForPXE && (
+        <button
+          className='bg-red-500 py-0.5 px-1 rounded-full text-white text-[10px]'
+          // onClick={() => connectToPXE()}
+        >
+          Reconnect
+        </button>
+      )}
+      {connectedToNode && (
+        <div className='animate-pulse bg-green-500 rounded-full h-1.5 w-1.5' />
+      )}
+    </div>
+  );
 }

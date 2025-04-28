@@ -33,44 +33,40 @@ export default function Header(): JSX.Element {
       </div>
       <div className='flex gap-4'>
         <TokenBalanceSection />
-        {wallet && (
-          <div className='flex gap-1 items-center'>
-            <button
-              className='flex gap-2 items-center ml-auto relative'
-              disabled={connectingWallet}
-              onClick={() =>
-                wallet ? setShowMenu(!showMenu) : connectWallet()
-              }
-            >
-              {walletButtonText}
-              {connectingWallet && <Loader size={16} />}
-              {!!wallet && showMenu && (
-                <div
-                  className='absolute bg-[#913DE5] left-0 rounded top-[calc(100%+12px)] w-full'
-                  ref={menuRef}
-                >
-                  <div
-                    className='cursor-pointer p-2 rounded hover:bg-[#A8A6A6] w-full'
-                    onClick={() => disconnectWallet()}
-                  >
-                    Logout
-                  </div>
-                </div>
-              )}
-            </button>
-            <CircleHelp data-tooltip-id='obsidion-help' size={20} />
-            <Tooltip clickable id='obsidion-help'>
-              <div>Obsidion setup</div>
-              <a
-                href='https://youtu.be/jdA-T-B8jY4'
-                rel='no-referrer'
-                target='_blank'
+        <div className='flex gap-1 items-center'>
+          <button
+            className='flex gap-2 items-center ml-auto relative'
+            disabled={connectingWallet}
+            onClick={() => (wallet ? setShowMenu(!showMenu) : connectWallet())}
+          >
+            {walletButtonText}
+            {connectingWallet && <Loader size={16} />}
+            {!!wallet && showMenu && (
+              <div
+                className='absolute bg-[#913DE5] left-0 rounded top-[calc(100%+12px)] w-full'
+                ref={menuRef}
               >
-                guide
-              </a>
-            </Tooltip>
-          </div>
-        )}
+                <div
+                  className='cursor-pointer p-2 rounded hover:bg-[#A8A6A6] w-full'
+                  onClick={() => disconnectWallet()}
+                >
+                  Logout
+                </div>
+              </div>
+            )}
+          </button>
+          <CircleHelp data-tooltip-id='obsidion-help' size={20} />
+          <Tooltip clickable id='obsidion-help'>
+            <div>Obsidion setup</div>
+            <a
+              href='https://youtu.be/jdA-T-B8jY4'
+              rel='no-referrer'
+              target='_blank'
+            >
+              guide
+            </a>
+          </Tooltip>
+        </div>
       </div>
     </div>
   );
