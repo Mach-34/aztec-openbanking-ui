@@ -115,8 +115,9 @@ export const AztecProvider = ({ children }: { children: ReactNode }) => {
   const connectToPXE = async () => {
     setWaitingForPXE(true);
     const pxeConfig = getPXEServiceConfig();
-    pxeConfig.dataDirectory = IS_AZTEC_TESTNET ? 'testnet' : 'sandbox';
-    pxeConfig.l1ChainId = IS_AZTEC_TESTNET ? 11155111 : 31337;
+    pxeConfig.dataDirectory =
+      IS_AZTEC_TESTNET === 'true' ? 'testnet' : 'sandbox';
+    pxeConfig.l1ChainId = IS_AZTEC_TESTNET === 'true' ? 11155111 : 31337;
     pxeConfig.proverEnabled = false;
     const browserClient = await createPXEService(aztecNode, pxeConfig);
     await waitForPXE(browserClient);
@@ -242,7 +243,7 @@ export const AztecProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     (async () => {
-      if (contracts) {
+      if (contracts && pxe && wallet) {
         await fetchTokenBalances(contracts.token);
       }
     })();
