@@ -1489,10 +1489,8 @@
     debug "^4.3.4"
     ws "^8.16.0"
 
-"@openbanking-nr/js-inputs@^1.0.7":
+"@openbanking-nr/js-inputs@../openbanking-circuit/js":
   version "1.0.7"
-  resolved "https://registry.yarnpkg.com/@openbanking-nr/js-inputs/-/js-inputs-1.0.7.tgz#afb967c6a2ae9efaf1afe42f5d60b52a1a5dfb42"
-  integrity sha512-hQ+Vh22pqTI/ud7XGcGFu+DJq7HIOlQQXSIdjRjiNtLxs1y2u0yZLsZPPmxK7rq95QjxVsSHJfNxG3/9dlt5fw==
   dependencies:
     "@aztec/accounts" "=0.85.0-alpha-testnet.2"
     "@aztec/noir-contracts.js" "=0.85.0-alpha-testnet.2"

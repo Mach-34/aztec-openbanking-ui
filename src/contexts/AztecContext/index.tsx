@@ -8,18 +8,13 @@ import {
   useState,
   ReactNode,
 } from 'react';
-import {
-  AztecAddress,
-  AztecNode,
-  createAztecNodeClient,
-} from '@aztec/aztec.js';
+import { AztecAddress, createAztecNodeClient } from '@aztec/aztec.js';
 import useAztecNodeHealth from '../../hooks/useAztecNodeHealth';
 import { AZTEC_WALLET_LS_KEY } from '../../utils/constants';
 import { Account, AztecWalletSdk, obsidion } from '@nemi-fi/wallet-sdk';
 import { useAccount } from '@nemi-fi/wallet-sdk/react';
 import { Contract } from '@nemi-fi/wallet-sdk/eip1193';
-import { OpenbankingEscrowContract } from '../../artifacts';
-import { TokenContract } from '@aztec/noir-contracts.js/Token';
+import { OpenbankingEscrowContract, TokenContract } from '../../artifacts';
 import { toast } from 'react-toastify';
 import { generateContractErrorMessage } from './helpers';
 import { DEFAULT_AZTEC_CONTEXT_PROPS, TokenBalance } from './constants';

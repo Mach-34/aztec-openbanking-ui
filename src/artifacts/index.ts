@@ -1,2 +1,2 @@
-import { OpenbankingEscrowContract, OpenbankingEscrowContractArtifact } from '@openbanking-nr/js-inputs/dist/artifacts';
-export { OpenbankingEscrowContract, OpenbankingEscrowContractArtifact };
+import { OpenbankingEscrowContract, OpenbankingEscrowContractArtifact, TokenContract, TokenContractArtifact } from '@openbanking-nr/js-inputs/dist/artifacts';
+export { OpenbankingEscrowContract, OpenbankingEscrowContractArtifact, TokenContract, TokenContractArtifact };
