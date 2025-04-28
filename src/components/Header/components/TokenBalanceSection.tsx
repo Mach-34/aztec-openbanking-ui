@@ -5,7 +5,6 @@ import usdc from '../../../assets/usdc.png';
 import { formatUSDC, toUSDCDecimals } from '../../../utils';
 import { toast } from 'react-toastify';
 import { Lock, LockOpen, Plus } from 'lucide-react';
-import { AztecAddress, SponsoredFeePaymentMethod } from '@aztec/aztec.js';
 import { AZTEC_TX_TIMEOUT } from '../../../utils/constants';
 
 const { VITE_APP_FPC_ADDRESS: FPC_ADDRESS } = import.meta.env;
@@ -13,9 +12,7 @@ const { VITE_APP_FPC_ADDRESS: FPC_ADDRESS } = import.meta.env;
 export default function TokenBalanceSection() {
   const {
     fetchingTokenBalances,
-    pxe,
     setTokenBalance,
-    tokenAdmin,
     tokenBalance,
     tokenContract,
     wallet,
@@ -26,28 +23,24 @@ export default function TokenBalanceSection() {
   const MINT_AMOUNT = toUSDCDecimals(10n ** 7n);
 
   const mintUsdc = async () => {
-    if (!FPC_ADDRESS || !tokenAdmin || !tokenContract || !wallet) return;
+    if (!FPC_ADDRESS || !tokenContract || !wallet) return;
     try {
       setMinting(true);
-      const paymentMethod = new SponsoredFeePaymentMethod(
-        AztecAddress.fromString(FPC_ADDRESS)
+      // const paymentMethod = new SponsoredFeePaymentMethod(
+      //   AztecAddress.fromString(FPC_ADDRESS)
+      // );
+
+      const privateMintCall = tokenContract.methods.mint_to_private(
+        wallet.getAddress(),
+        wallet.getAddress(),
+        MINT_AMOUNT
       );
 
-      const privateMintCall = tokenContract
-        .withWallet(tokenAdmin)
-        .methods.mint_to_private(
-          tokenAdmin.getAddress(),
-          wallet.getAddress(),
-          MINT_AMOUNT
-        )
-        .send({ fee: { paymentMethod } });
-
-      await tokenContract
-        .withWallet(tokenAdmin)
-        .methods.mint_to_public(wallet.getAddress(), MINT_AMOUNT)
-        .send({ fee: { paymentMethod } })
+      await tokenContract.methods
+        .mint_to_public(wallet.getAddress(), MINT_AMOUNT)
+        .send()
         .wait({ timeout: AZTEC_TX_TIMEOUT });
-      await privateMintCall.wait({ timeout: AZTEC_TX_TIMEOUT });
+      await privateMintCall.send().wait({ timeout: AZTEC_TX_TIMEOUT });
       setTokenBalance((prev) => ({
         public: prev.public + MINT_AMOUNT,
         private: prev.private + MINT_AMOUNT,
@@ -65,7 +58,7 @@ export default function TokenBalanceSection() {
     }
   };
 
-  if (!pxe) {
+  if (!wallet) {
     return <></>;
   } else {
     return (

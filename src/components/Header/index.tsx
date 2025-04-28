@@ -10,7 +10,7 @@ import { CircleHelp } from 'lucide-react';
 import { Tooltip } from 'react-tooltip';
 
 export default function Header(): JSX.Element {
-  const { connectingWallet, connectWallet, disconnectWallet, pxe, wallet } =
+  const { connectingWallet, connectWallet, disconnectWallet, wallet } =
     useAztec();
   const menuRef = useRef<HTMLDivElement>(null);
   const [showMenu, setShowMenu] = useState<boolean>(false);
@@ -33,7 +33,7 @@ export default function Header(): JSX.Element {
       </div>
       <div className='flex gap-4'>
         <TokenBalanceSection />
-        {pxe && (
+        {wallet && (
           <div className='flex gap-1 items-center'>
             <button
               className='flex gap-2 items-center ml-auto relative'

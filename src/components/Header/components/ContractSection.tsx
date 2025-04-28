@@ -5,12 +5,13 @@ import { truncateAddress } from '../../../utils';
 import { AZTEC_SCAN_CONTRACT_URL } from '../../../utils/constants';
 
 export default function ContractSection() {
-  const { escrowContract, loadingContracts, pxe, tokenContract } = useAztec();
+  const { escrowContract, loadingContracts, tokenContract, wallet } =
+    useAztec();
 
   const escrowAddr = escrowContract?.address.toString();
   const tokenAddr = tokenContract?.address.toString();
 
-  if (!pxe) {
+  if (!wallet) {
     return <></>;
   } else if (loadingContracts) {
     return (
