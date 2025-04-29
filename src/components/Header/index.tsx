@@ -8,6 +8,7 @@ import TokenBalanceSection from './components/TokenBalanceSection';
 import Loader from '../Loader';
 import { CircleHelp } from 'lucide-react';
 import { Tooltip } from 'react-tooltip';
+import logo from '../../assets/logo.jpg';
 
 export default function Header(): JSX.Element {
   const { connectingWallet, connectWallet, disconnectWallet, wallet } =
@@ -28,6 +29,7 @@ export default function Header(): JSX.Element {
   return (
     <div className='flex items-center justify-between py-5 px-10'>
       <div className='flex gap-2 items-center'>
+        <img alt='Logo' className='h-12 mr-2 w-12' src={logo} />
         <PXEBadge />
         {wallet && <ContractSection />}
       </div>
