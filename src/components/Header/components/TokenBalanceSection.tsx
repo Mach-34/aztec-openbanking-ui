@@ -4,17 +4,15 @@ import Loader from '../../Loader';
 import usdc from '../../../assets/usdc.png';
 import { formatUSDC, toUSDCDecimals } from '../../../utils';
 import { toast } from 'react-toastify';
-import { Lock, LockOpen, Plus } from 'lucide-react';
-import { AztecAddress, SponsoredFeePaymentMethod } from '@aztec/aztec.js';
+import { ExternalLink, Lock, LockOpen, Plus } from 'lucide-react';
+import { AZTEC_TX_TIMEOUT } from '../../../utils/constants';
 
-const { VITE_APP_FPC_ADDRESS: FPC_ADDRESS } = import.meta.env;
+const { VITE_APP_IS_AZTEC_TESTNET: IS_AZTEC_TESTNET } = import.meta.env;
 
 export default function TokenBalanceSection() {
   const {
     fetchingTokenBalances,
-    pxe,
     setTokenBalance,
-    tokenAdmin,
     tokenBalance,
     tokenContract,
     wallet,
@@ -25,28 +23,21 @@ export default function TokenBalanceSection() {
   const MINT_AMOUNT = toUSDCDecimals(10n ** 7n);
 
   const mintUsdc = async () => {
-    if (!FPC_ADDRESS || !tokenAdmin || !tokenContract || !wallet) return;
+    if (!tokenContract || !wallet) return;
     try {
       setMinting(true);
-      const paymentMethod = new SponsoredFeePaymentMethod(
-        AztecAddress.fromString(FPC_ADDRESS)
+
+      const privateMintCall = tokenContract.methods.mint_to_private(
+        wallet.getAddress(),
+        wallet.getAddress(),
+        MINT_AMOUNT
       );
 
-      const privateMintCall = tokenContract
-        .withWallet(tokenAdmin)
-        .methods.mint_to_private(
-          tokenAdmin.getAddress(),
-          wallet.getAddress(),
-          MINT_AMOUNT
-        )
-        .send({ fee: { paymentMethod } });
-
-      await tokenContract
-        .withWallet(tokenAdmin)
-        .methods.mint_to_public(wallet.getAddress(), MINT_AMOUNT)
-        .send({ fee: { paymentMethod } })
-        .wait();
-      await privateMintCall.wait();
+      await tokenContract.methods
+        .mint_to_public(wallet.getAddress(), MINT_AMOUNT)
+        .send()
+        .wait({ timeout: AZTEC_TX_TIMEOUT });
+      await privateMintCall.send().wait({ timeout: AZTEC_TX_TIMEOUT });
       setTokenBalance((prev) => ({
         public: prev.public + MINT_AMOUNT,
         private: prev.private + MINT_AMOUNT,
@@ -64,7 +55,7 @@ export default function TokenBalanceSection() {
     }
   };
 
-  if (!pxe) {
+  if (!wallet) {
     return <></>;
   } else {
     return (
@@ -84,14 +75,26 @@ export default function TokenBalanceSection() {
                       <div>Balance</div>
                       <img alt='USDC' className='h-4 w-4' src={usdc} />
                     </div>
-                    <button
-                      className='border border-[#00C950] bg-[rgba(0,201,80,.5)] flex gap-1 items-center px-1 py-0.5 rounded-full text-white text-[10px]'
-                      onClick={() => mintUsdc()}
-                    >
-                      {minting ? 'Minting...' : 'Mint'}
-                      {!minting && <Plus size={10} />}
-                      {minting && <Loader size={10} />}
-                    </button>
+                    {IS_AZTEC_TESTNET === 'true' ? (
+                      <a
+                        className='border border-[#00C950] bg-[rgba(0,201,80,.5)] flex gap-1 items-center px-1 py-0.5 rounded-full text-[10px]'
+                        href='https://app.nemi.fi/'
+                        rel='noreferrer'
+                        target='_blank'
+                      >
+                        <div className='text-white'>Mint on nemi.fi</div>
+                        <ExternalLink color='white' size={10} />
+                      </a>
+                    ) : (
+                      <button
+                        className='border border-[#00C950] bg-[rgba(0,201,80,.5)] flex gap-1 items-center px-1 py-0.5 rounded-full text-white text-[10px]'
+                        onClick={() => mintUsdc()}
+                      >
+                        {minting ? 'Minting...' : 'Mint'}
+                        {!minting && <Plus size={10} />}
+                        {minting && <Loader size={10} />}
+                      </button>
+                    )}
                   </div>
                   <div>
                     <div className='flex items-center text-xs'>

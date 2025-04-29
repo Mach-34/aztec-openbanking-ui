@@ -16,6 +16,7 @@ import { prepareOpenbankingPayment } from './utils';
 import { useAztec } from '../../contexts/AztecContext';
 import { toast } from 'react-toastify';
 import { formatUSDC, toUSDCDecimals } from '../../utils';
+import { AZTEC_TX_TIMEOUT } from '../../utils/constants';
 
 type PaymentModalProps = {
   creditiorData: CreditorData | null;
@@ -89,7 +90,7 @@ export default function PaymentModal({
         .withAccount(wallet)
         .methods.prove_payment_and_claim(aztecProofData)
         .send()
-        .wait();
+        .wait({ timeout: AZTEC_TX_TIMEOUT });
 
       const amountDecimals = toUSDCDecimals(amount);
 

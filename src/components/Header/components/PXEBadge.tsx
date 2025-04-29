@@ -2,40 +2,42 @@ import { useMemo } from 'react';
 import { useAztec } from '../../../contexts/AztecContext';
 import Loader from '../../Loader';
 
-const { VITE_APP_PXE_URL: PXE_URL } = import.meta.env;
+const { VITE_APP_AZTEC_NODE_URL: AZTEC_NODE_URL } = import.meta.env;
 
-export default function PXEBadge() {
-  const { connectToPXE, pxe, waitingForPXE } = useAztec();
+export default function NodeBadge() {
+  const { connectedToNode } = useAztec();
+
+  const waitingForPXE = false;
 
   const badgeClass = useMemo((): string => {
     let badgeColor = '';
     if (waitingForPXE) {
       badgeColor = 'border-yellow-500 text-yellow-500';
     } else {
-      badgeColor = pxe
+      badgeColor = connectedToNode
         ? 'border-green-500 text-green-500'
         : 'border-red-500 text-red-500';
     }
     return `border flex gap-2 items-center px-2 py-1 rounded-full text-xs ${badgeColor}`;
-  }, [pxe, waitingForPXE]);
+  }, [connectedToNode, waitingForPXE]);
 
   return (
     <div className={badgeClass}>
       {waitingForPXE
-        ? `Waiting for PXE at ${PXE_URL}...`
-        : pxe
-        ? 'Connected to PXE'
-        : `Connection to PXE at ${PXE_URL} lost`}
+        ? `Waiting for Aztec Node at ${AZTEC_NODE_URL}...`
+        : connectedToNode
+        ? 'Connected to Node'
+        : `Lost connection at ${AZTEC_NODE_URL}`}
       {waitingForPXE && <Loader size={12} />}
-      {!pxe && !waitingForPXE && (
+      {!connectedToNode && !waitingForPXE && (
         <button
           className='bg-red-500 py-0.5 px-1 rounded-full text-white text-[10px]'
-          onClick={() => connectToPXE()}
+          // onClick={() => connectToPXE()}
         >
           Reconnect
         </button>
       )}
-      {pxe && (
+      {connectedToNode && (
         <div className='animate-pulse bg-green-500 rounded-full h-1.5 w-1.5' />
       )}
     </div>

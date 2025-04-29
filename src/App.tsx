@@ -117,7 +117,7 @@ function App() {
 
       const authWitness: IntentAction = {
         caller: escrowContract.address,
-        action: executionPayload.calls[0],
+        action: executionPayload,
       };
 
       await escrowContract
@@ -294,7 +294,7 @@ function App() {
 
       const authWitness: IntentAction = {
         caller: escrowContract.address,
-        action: executionPayload.calls[0],
+        action: executionPayload,
       };
 
       await escrowContract

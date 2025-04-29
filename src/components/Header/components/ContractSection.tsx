@@ -2,11 +2,16 @@ import { useAztec } from '../../../contexts/AztecContext';
 import { ReceiptText } from 'lucide-react';
 import Loader from '../../Loader';
 import { truncateAddress } from '../../../utils';
+import { AZTEC_SCAN_CONTRACT_URL } from '../../../utils/constants';
 
 export default function ContractSection() {
-  const { escrowContract, loadingContracts, pxe, tokenContract } = useAztec();
+  const { escrowContract, loadingContracts, tokenContract, wallet } =
+    useAztec();
 
-  if (!pxe) {
+  const escrowAddr = escrowContract?.address.toString();
+  const tokenAddr = tokenContract?.address.toString();
+
+  if (!wallet) {
     return <></>;
   } else if (loadingContracts) {
     return (
@@ -29,19 +34,31 @@ export default function ContractSection() {
         <div className='mt-2'>
           <div className='flex gap-4 justify-between text-xs'>
             <div>Usdc:</div>
-            <div>
-              {tokenContract
-                ? truncateAddress(tokenContract.address.toString())
-                : 'None found'}
-            </div>
+            {tokenAddr ? (
+              <a
+                href={`${AZTEC_SCAN_CONTRACT_URL}/${tokenAddr}`}
+                rel='noreferrer'
+                target='_blank'
+              >
+                {truncateAddress(tokenAddr)}
+              </a>
+            ) : (
+              <div>None found</div>
+            )}
           </div>
           <div className='flex gap-4 justify-between text-xs'>
             <div>Escrow:</div>
-            <div>
-              {escrowContract
-                ? truncateAddress(escrowContract.address.toString())
-                : 'None found'}
-            </div>
+            {escrowAddr ? (
+              <a
+                href={`${AZTEC_SCAN_CONTRACT_URL}/${escrowAddr}`}
+                rel='noreferrer'
+                target='_blank'
+              >
+                {truncateAddress(escrowAddr)}
+              </a>
+            ) : (
+              <div>None found</div>
+            )}
           </div>
         </div>
       </div>

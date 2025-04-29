@@ -1,15 +1,15 @@
 import { useEffect, useRef } from 'react';
-import { PXE } from '@aztec/aztec.js';
+import { AztecNode } from '@aztec/aztec.js';
 import { toast } from 'react-toastify';
 
-export default function usePXEHealth(
-  pxe: PXE | null,
-  onPXEConnectionLost: () => void
+export default function useAztecNodeHealth(
+  node: AztecNode | null,
+  onNodeConnectionLost: () => void
 ) {
   const intervalIdRef = useRef(null);
   const isProcessingRef = useRef(false);
 
-  const { VITE_APP_PXE_URL: PXE_URL } = import.meta.env;
+  const { VITE_APP_AZTEC_NODE_URL: AZTEC_NODE_URL } = import.meta.env;
 
   useEffect(() => {
     // Clear any existing interval when pxe changes or on cleanup
@@ -20,7 +20,7 @@ export default function usePXEHealth(
       }
     };
 
-    if (pxe) {
+    if (node) {
       // Set up a new interval
       // @ts-ignore
       intervalIdRef.current = setInterval(async () => {
@@ -28,10 +28,10 @@ export default function usePXEHealth(
 
         isProcessingRef.current = true;
         try {
-          await pxe.getPXEInfo();
+          await node.getNodeInfo();
         } catch {
-          onPXEConnectionLost();
-          toast.error(`Lost connection to PXE at ${PXE_URL}`);
+          onNodeConnectionLost();
+          toast.error(`Lost connection to Aztec Node at ${AZTEC_NODE_URL}`);
         } finally {
           isProcessingRef.current = false;
         }
@@ -43,5 +43,5 @@ export default function usePXEHealth(
     return () => {
       clearExistingInterval();
     };
-  }, [onPXEConnectionLost, pxe, PXE_URL]);
+  }, [AZTEC_NODE_URL, node, onNodeConnectionLost]);
 }
