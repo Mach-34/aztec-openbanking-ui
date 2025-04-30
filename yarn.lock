@@ -1377,17 +1377,17 @@
   resolved "https://registry.yarnpkg.com/@msgpackr-extract/msgpackr-extract-win32-x64/-/msgpackr-extract-win32-x64-3.0.3.tgz#0aa5502d547b57abfc4ac492de68e2006e417242"
   integrity sha512-x0fWaQtYp4E6sktbsdAqnehxDgEc/VwM7uLsRCYWaiGu0ykYdZPiS8zCWdnjHwyiumousxfBm4SO31eXqwEZhQ==
 
-"@nemi-fi/wallet-sdk@=0.85.0-next.3":
-  version "0.85.0-next.3"
-  resolved "https://registry.yarnpkg.com/@nemi-fi/wallet-sdk/-/wallet-sdk-0.85.0-next.3.tgz#4049c4443adbfc86e87c0f4f113e5f24ae2dfea8"
-  integrity sha512-F/WdOsrT23A9BE3eNzl7ot22D1kf0+QHTtToXXhyM5T0xEM/uen7ZFR6NiDCvn0gpkYgIhbFW3S/MVpYHvqnDQ==
+"@nemi-fi/wallet-sdk@=0.85.0-next.4":
+  version "0.85.0-next.4"
+  resolved "https://registry.yarnpkg.com/@nemi-fi/wallet-sdk/-/wallet-sdk-0.85.0-next.4.tgz#d60874c95257e64373ab44d8676394b809378f0d"
+  integrity sha512-p1pdUroXAVDcLN9NESlCBFspQ1pIQElqhhyfvMsrjb5pmcOhvXqwPv/U5O5LIiMxWL34KVbt5dWjdL06ZeI8Gg==
   dependencies:
     "@aztec/aztec.js" "0.85.0-alpha-testnet.2"
     "@aztec/constants" "0.85.0-alpha-testnet.2"
     "@aztec/entrypoints" "0.85.0-alpha-testnet.2"
     "@aztec/protocol-contracts" "0.85.0-alpha-testnet.2"
     "@aztec/stdlib" "0.85.0-alpha-testnet.2"
-    "@obsidion/bridge" "0.5.0"
+    "@obsidion/bridge" "0.6.0"
     "@walletconnect/modal-sign-html" "^2.6.2"
     "@walletconnect/utils" "^2.11.2"
     lodash-es "^4.17.21"
@@ -1479,10 +1479,10 @@
   resolved "https://registry.yarnpkg.com/@noir-lang/types/-/types-1.0.0-beta.1.tgz#4fe9062a8209c9e0987cc41c9506cc4423004b8f"
   integrity sha512-rcisXDdKNLA7mh0Ll9j3MGG5BP3W52K3Owr0+opJhs+4jHoAx1Gb5vGNG9s6nYb2i21VZMgOzKVvBd25ck0b9w==
 
-"@obsidion/bridge@0.5.0":
-  version "0.5.0"
-  resolved "https://registry.yarnpkg.com/@obsidion/bridge/-/bridge-0.5.0.tgz#2327f32cdbe9e54398d2299ab7e6e3638b7bda8e"
-  integrity sha512-27EJKgyRFOhE1HOzvRVksAa0tQXZe9kd0nBTEkRwogcbvDVE8wdCtMK5s3kicNpzf+9u0g+suyJZQJOn9iQZtg==
+"@obsidion/bridge@0.6.0":
+  version "0.6.0"
+  resolved "https://registry.yarnpkg.com/@obsidion/bridge/-/bridge-0.6.0.tgz#783541b2f76c9491a6f7bebe8e2ef451bfd0fce9"
+  integrity sha512-eYIi4bOD5RAJNUgzIfsJZRhXhEzwqwWHfCI2lTo7wNOpAxRJYF7sGhNtbJeBB9P6bHjmPN7irW/VjkFEmMtvHg==
   dependencies:
     "@noble/ciphers" "^1.2.1"
     "@noble/secp256k1" "^2.2.3"

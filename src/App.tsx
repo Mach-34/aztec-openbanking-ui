@@ -22,6 +22,7 @@ import {
 import useWebSocket from './hooks/useWebsocket';
 import Loader from './components/Loader';
 import { poseidon2Hash } from '@aztec/foundation/crypto';
+import { AZTEC_TX_TIMEOUT } from './utils/constants';
 Modal.setAppElement('#root');
 
 const TABS = ['Your Positions', 'Open Orders'];
@@ -130,7 +131,7 @@ function App() {
           { authWitnesses: [authWitness] }
         )
         .send()
-        .wait();
+        .wait({ timeout: AZTEC_TX_TIMEOUT });
 
       // update token balance
       setTokenBalance((prev) => ({
@@ -303,7 +304,7 @@ function App() {
           authWitnesses: [authWitness],
         })
         .send()
-        .wait();
+        .wait({ timeout: AZTEC_TX_TIMEOUT });
 
       // update token balances
       setTokenBalance((prev) => ({
@@ -346,7 +347,7 @@ function App() {
         .withAccount(wallet)
         .methods.withdraw_escrow_balance(convertedDecimals)
         .send()
-        .wait();
+        .wait({ timeout: AZTEC_TX_TIMEOUT });
 
       // update token balances
       setTokenBalance((prev) => ({
