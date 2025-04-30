@@ -7,7 +7,7 @@ import DepositModal from './components/DepositModal';
 import { useAztec } from './contexts/AztecContext';
 import { Fr } from '@aztec/aztec.js';
 import { formatUSDC, toUSDCDecimals } from './utils';
-import { IntentAction } from '@nemi-fi/wallet-sdk/eip1193';
+import { IntentAction } from '@nemi-fi/wallet-sdk';
 import DataTable from './components/DataTable';
 import PaymentModal from './components/PaymentModal';
 import { CircleUserRound, Plus } from 'lucide-react';
