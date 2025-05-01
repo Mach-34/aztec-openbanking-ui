@@ -78,11 +78,11 @@ export default function TokenBalanceSection() {
                     {IS_AZTEC_TESTNET === 'true' ? (
                       <a
                         className='border border-[#00C950] bg-[rgba(0,201,80,.5)] flex gap-1 items-center px-1 py-0.5 rounded-full text-[10px]'
-                        href='https://app.nemi.fi/'
+                        href='https://app.obsidion.xyz/'
                         rel='noreferrer'
                         target='_blank'
                       >
-                        <div className='text-white'>Mint on nemi.fi</div>
+                        <div className='text-white'>Mint on obsidion.xyz</div>
                         <ExternalLink color='white' size={10} />
                       </a>
                     ) : (
