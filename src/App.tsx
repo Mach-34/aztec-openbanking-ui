@@ -215,10 +215,11 @@ function App() {
       // TODO: Get fetch all commitment function working
       const escrowBalances = await Promise.all(
         providerData.map(async (commitment: any) => {
+          console.time("fetch")
           const balance = await escrowContract.methods
             .get_escrow_liqudity_position(commitment.commitment)
             .simulate();
-
+          console.timeEnd("fetch")
           return {
             ...commitment,
             balance,
