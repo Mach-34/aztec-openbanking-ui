@@ -1377,14 +1377,16 @@
   resolved "https://registry.yarnpkg.com/@msgpackr-extract/msgpackr-extract-win32-x64/-/msgpackr-extract-win32-x64-3.0.3.tgz#0aa5502d547b57abfc4ac492de68e2006e417242"
   integrity sha512-x0fWaQtYp4E6sktbsdAqnehxDgEc/VwM7uLsRCYWaiGu0ykYdZPiS8zCWdnjHwyiumousxfBm4SO31eXqwEZhQ==
 
-"@nemi-fi/wallet-sdk@=0.85.0-next.4":
-  version "0.85.0-next.4"
-  resolved "https://registry.yarnpkg.com/@nemi-fi/wallet-sdk/-/wallet-sdk-0.85.0-next.4.tgz#d60874c95257e64373ab44d8676394b809378f0d"
-  integrity sha512-p1pdUroXAVDcLN9NESlCBFspQ1pIQElqhhyfvMsrjb5pmcOhvXqwPv/U5O5LIiMxWL34KVbt5dWjdL06ZeI8Gg==
+"@nemi-fi/wallet-sdk@=0.85.0-next.5":
+  version "0.85.0-next.5"
+  resolved "https://registry.yarnpkg.com/@nemi-fi/wallet-sdk/-/wallet-sdk-0.85.0-next.5.tgz#0eeb5be0fc443d5ed77ba7a591b47420301bf3ff"
+  integrity sha512-lF0DmmBx+u5qk2GXJYn0oJCmqHJLnckd3oCIysFFpQv64UZ5yQI6EMxYnCcwzK92Qgt20UeJLHXkkdT7o8B+Hg==
   dependencies:
     "@aztec/aztec.js" "0.85.0-alpha-testnet.2"
     "@aztec/constants" "0.85.0-alpha-testnet.2"
     "@aztec/entrypoints" "0.85.0-alpha-testnet.2"
+    "@aztec/foundation" "0.85.0-alpha-testnet.2"
+    "@aztec/noir-protocol-circuits-types" "0.85.0-alpha-testnet.2"
     "@aztec/protocol-contracts" "0.85.0-alpha-testnet.2"
     "@aztec/stdlib" "0.85.0-alpha-testnet.2"
     "@obsidion/bridge" "0.6.0"
@@ -6661,16 +6663,7 @@ string-format@^2.0.0:
   resolved "https://registry.yarnpkg.com/string-format/-/string-format-2.0.0.tgz#f2df2e7097440d3b65de31b6d40d54c96eaffb9b"
   integrity sha512-bbEs3scLeYNXLecRRuk6uJxdXUSj6le/8rNPHChIJTn2V79aXVTR1EH2OH5zLKKoz0V02fOUKZZcw01pLUShZA==
 
-"string-width-cjs@npm:string-width@^4.2.0":
-  version "4.2.3"
-  resolved "https://registry.yarnpkg.com/string-width/-/string-width-4.2.3.tgz#269c7117d27b05ad2e536830a8ec895ef9c6d010"
-  integrity sha512-wKyQRQpjJ0sIp62ErSZdGsjMJWsap5oRNihHhu6G7JVO/9jIB6UyevL+tXuOqrng8j/cxKTWyWUwvSTriiZz/g==
-  dependencies:
-    emoji-regex "^8.0.0"
-    is-fullwidth-code-point "^3.0.0"
-    strip-ansi "^6.0.1"
-
-string-width@^4.1.0, string-width@^4.2.0:
+"string-width-cjs@npm:string-width@^4.2.0", string-width@^4.1.0, string-width@^4.2.0:
   version "4.2.3"
   resolved "https://registry.yarnpkg.com/string-width/-/string-width-4.2.3.tgz#269c7117d27b05ad2e536830a8ec895ef9c6d010"
   integrity sha512-wKyQRQpjJ0sIp62ErSZdGsjMJWsap5oRNihHhu6G7JVO/9jIB6UyevL+tXuOqrng8j/cxKTWyWUwvSTriiZz/g==
@@ -6702,14 +6695,7 @@ string_decoder@~1.1.1:
   dependencies:
     safe-buffer "~5.1.0"
 
-"strip-ansi-cjs@npm:strip-ansi@^6.0.1":
-  version "6.0.1"
-  resolved "https://registry.yarnpkg.com/strip-ansi/-/strip-ansi-6.0.1.tgz#9e26c63d30f53443e9489495b2105d37b67a85d9"
-  integrity sha512-Y38VPSHcqkFrCpFnQ9vuSXmquuv5oXOKpGeT6aGrr3o3Gc9AlVa6JBfUSOCnbxGGZF+/0ooI7KrPuUSztUdU5A==
-  dependencies:
-    ansi-regex "^5.0.1"
-
-strip-ansi@^6.0.0, strip-ansi@^6.0.1:
+"strip-ansi-cjs@npm:strip-ansi@^6.0.1", strip-ansi@^6.0.0, strip-ansi@^6.0.1:
   version "6.0.1"
   resolved "https://registry.yarnpkg.com/strip-ansi/-/strip-ansi-6.0.1.tgz#9e26c63d30f53443e9489495b2105d37b67a85d9"
   integrity sha512-Y38VPSHcqkFrCpFnQ9vuSXmquuv5oXOKpGeT6aGrr3o3Gc9AlVa6JBfUSOCnbxGGZF+/0ooI7KrPuUSztUdU5A==
