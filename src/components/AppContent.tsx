@@ -159,10 +159,10 @@ export default function AppContent({
               className='animate-pulse border border-[#913DE5] h-24 rounded w-24'
               src={logo}
             />
-            <div className='text-xl'>Fetching Orders</div>
+            <div className='text-2xl'>Fetching Orders</div>
           </div>
         ) : formattedOrders.length === 0 ? (
-          <div className='flex flex-col gap-4 items-center justify-center text-3xl'>
+          <div className='flex flex-col gap-4 items-center justify-center text-2xl'>
             No open orders
           </div>
         ) : (

@@ -18,7 +18,7 @@ export default function NodeBadge() {
         ? 'border-green-500 text-green-500'
         : 'border-red-500 text-red-500';
     }
-    return `border flex gap-2 items-center px-2 py-1 rounded-full text-xs ${badgeColor}`;
+    return `border-2 flex gap-2 items-center px-2 py-1 rounded-full text-xs ${badgeColor}`;
   }, [connectedToNode, waitingForPXE]);
 
   return (
