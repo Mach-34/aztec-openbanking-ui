@@ -12,5 +12,5 @@ export type CreditorData = {
     balance: bigint;
     commitment: bigint;
     currency: CurrencyCode;
-    sortCode: string;
+    sortCodeAccNum: string;
 }

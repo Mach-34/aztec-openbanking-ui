@@ -43,7 +43,7 @@ const {
 function App() {
   const { escrowContract, setTokenBalance, tokenContract, wallet } = useAztec();
   const [orders, setOrders] = useState<Array<CreditorData>>([]);
-  const [fetchingOrders, setFetchingOrders] = useState<boolean>(true);
+  const [fetchingOrders, setFetchingOrders] = useState<boolean>(false);
   const [fetchingPositions, setFetchingTokenPositions] =
     useState<boolean>(true);
   const [positions, setPositions] = useState<OwnedPositions[]>([]);
@@ -90,7 +90,7 @@ function App() {
   }, [positions]);
 
   const depositFunds = async (
-    sortCode: string,
+    sortCodeAccNum: string,
     currencyCode: string,
     amount: number
   ) => {
@@ -99,8 +99,8 @@ function App() {
     const depositAmount = toUSDCDecimals(BigInt(amount));
 
     try {
-      const sortcodeField = Fr.fromBufferReduce(
-        Buffer.from(sortCode).reverse()
+      const sortCodeAccNumField = Fr.fromBufferReduce(
+        Buffer.from(sortCodeAccNum).reverse()
       );
       const currencyCodeField = Fr.fromBufferReduce(
         Buffer.from(currencyCode.slice(0, 3)).reverse()
@@ -124,7 +124,7 @@ function App() {
       await escrowContract
         .withAccount(wallet)
         .methods.init_escrow_balance(
-          sortcodeField,
+          sortCodeAccNumField,
           currencyCodeField,
           depositAmount,
           Fr.random(),
@@ -141,7 +141,7 @@ function App() {
 
       // compute commitmentment and post to DB
       const commitment = await poseidon2Hash([
-        sortcodeField,
+        sortCodeAccNumField,
         currencyCodeField,
       ]);
 
@@ -159,7 +159,7 @@ function App() {
       // store commitment on DB
       await fetch(`${SERVER_URL}/commitment`, {
         body: JSON.stringify({
-          sortCode,
+          sortCode: sortCodeAccNum,
           commitment: commitment.toBigInt().toString(),
         }),
         headers: {
@@ -175,7 +175,7 @@ function App() {
           balance: depositAmount,
           commitment: commitment.toBigInt(),
           currency: CurrencyCode.GBP,
-          sortCode,
+          sortCodeAccNum,
         };
         return [...prev, order];
       });
@@ -215,11 +215,11 @@ function App() {
       // TODO: Get fetch all commitment function working
       const escrowBalances = await Promise.all(
         providerData.map(async (commitment: any) => {
-          console.time("fetch")
+          console.time('fetch');
           const balance = await escrowContract.methods
             .get_escrow_liqudity_position(commitment.commitment)
             .simulate();
-          console.timeEnd("fetch")
+          console.timeEnd('fetch');
           return {
             ...commitment,
             balance,
@@ -229,17 +229,18 @@ function App() {
 
       // filter out nonexistent balances
       const formatted = escrowBalances
-        .filter((balance) => balance.balance._is_some)
+        .filter((balance) => balance.balance.initialized)
         .map((balance: any) => {
           return {
-            balance: balance.balance._value.balance,
+            balance: balance.balance.balance,
             commitment: balance.commitment,
             currency: CurrencyCode.GBP,
-            sortCode: balance.sortCode,
+            sortCodeAccNum: balance.sortCode,
           };
         });
       setOrders(formatted);
     } catch (err) {
+      console.log('Error: ', err);
       toast.error('Error occurred fetching orders');
     } finally {
       setFetchingOrders(false);
@@ -258,19 +259,19 @@ function App() {
           .get_escrow_liqudity_position(commitment)
           .simulate();
 
-        if (commitmentBalance._is_some) {
+        if (commitmentBalance.initialized) {
           // format position data for table
           setPositions([
             {
               // @ts-ignore
-              balance: commitmentBalance._value.balance,
+              balance: commitmentBalance.balance,
               commitment: commitment,
               currency: CurrencyCode.GBP,
               // @ts-ignore
-              withdrawable_at: commitmentBalance._value.withdrawable_at,
+              withdrawable_at: commitmentBalance.withdrawable_at,
               withdrawable_balance:
                 // @ts-ignore
-                commitmentBalance._value.withdrawable_balance,
+                commitmentBalance.withdrawable_balance,
             },
           ]);
         }
@@ -459,6 +460,10 @@ function App() {
                 </button>
               </div>
             )
+          ) : !wallet ? (
+            <div className='flex flex-1 flex-col gap-4 items-center justify-center'>
+              <div className='text-3xl'>Please Connect Wallet</div>
+            </div>
           ) : fetchingOrders ? (
             <div className='flex flex-1 flex-col gap-4 items-center justify-center'>
               <div className='text-3xl'>Fetching Orders</div>

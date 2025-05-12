@@ -6,7 +6,7 @@ import { CurrencyCode } from '../utils/data';
 
 type DepositModalProps = {
   onFinish: (
-    sortCode: string,
+    sortCodeAccNum: string,
     currencyCode: string,
     amount: number
   ) => Promise<void>;
@@ -17,6 +17,7 @@ export default function DepositModal({
   onFinish,
   open,
 }: DepositModalProps): JSX.Element {
+  const [accountNumber, setAccountNumber] = useState<string>('');
   const [amount, setAmount] = useState('');
   const [, setCurrencyCode] = useState<string>('');
   const [depositing, setDepositing] = useState<boolean>(false);
@@ -28,7 +29,11 @@ export default function DepositModal({
     if (validateInputs()) {
       setDepositing(true);
       try {
-        await onFinish(sortCode, CurrencyCode.GBP, Number(amount));
+        await onFinish(
+          `${sortCode}${accountNumber}`,
+          CurrencyCode.GBP,
+          Number(amount)
+        );
         onClose();
       } catch {
       } finally {
@@ -38,7 +43,7 @@ export default function DepositModal({
   };
 
   const validateInputs = () => {
-    if (/^\d{14}$/.test(sortCode)) {
+    if (/^\d{6}$/.test(sortCode) && /^\d{8}$/.test(accountNumber)) {
       setInputValidationError(false);
       return true;
     } else {
@@ -71,14 +76,26 @@ export default function DepositModal({
         <Input
           className='w-full'
           error={
-            inputValidationError
-              ? 'Sort code must be exactly 14 numberic characters'
+            inputValidationError && sortCode.length !== 6
+              ? 'Sort code must be exactly 6 numeric characters'
               : ''
           }
           onChange={setSortCode}
           placeholder='Enter sort code...'
           value={sortCode}
           title='Sort Code'
+        />
+        <Input
+          className='w-full'
+          error={
+            inputValidationError && accountNumber.length !== 8
+              ? 'Account number must be exactly 8 numeric characters'
+              : ''
+          }
+          onChange={setAccountNumber}
+          placeholder='Enter account number...'
+          value={accountNumber}
+          title='Account Number'
         />
         <Dropdown
           className='mr-auto'
