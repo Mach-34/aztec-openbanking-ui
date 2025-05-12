@@ -35,7 +35,7 @@ export default function AppContent({
   setShowDepositModal,
   setShowIncreaseBalanceModal,
   setShowWithdrawModal,
-}: AppContentProps): JSX.Element {
+}: AppContentProps) {
   const { connectWallet, connectingWallet, wallet } = useAztec();
   const [selectedTab, setSelectedTab] = useState<string>(TABS[1]);
 
