@@ -1,33 +1,24 @@
 import Header from './components/Header';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import Modal from 'react-modal';
 import DepositModal from './components/DepositModal';
 import { useAztec } from './contexts/AztecContext';
 import { Fr } from '@aztec/aztec.js';
-import { formatUSDC, toUSDCDecimals } from './utils';
+import { toUSDCDecimals } from './utils';
 import { IntentAction } from '@nemi-fi/wallet-sdk';
-import DataTable from './components/DataTable';
 import PaymentModal from './components/PaymentModal';
-import { CircleUserRound, Plus } from 'lucide-react';
 import IncreaseBalanceModal from './components/IncreaseBalanceModal';
 import WithdrawModal from './components/WithdrawModal';
-import {
-  CreditorData,
-  CurrencyCode,
-  OPEN_POSITION_HEADERS,
-  OWNED_POSITION_HEADERS,
-} from './utils/data';
+import { CreditorData, CurrencyCode } from './utils/data';
 import useWebSocket from './hooks/useWebsocket';
-import Loader from './components/Loader';
 import { poseidon2Hash } from '@aztec/foundation/crypto';
 import { AZTEC_TX_TIMEOUT } from './utils/constants';
+import AppContent from './components/AppContent';
 Modal.setAppElement('#root');
 
-const TABS = ['Your Positions', 'Open Orders'];
-
-type OwnedPositions = {
+export type OwnedPositions = {
   balance: bigint;
   commitment: bigint;
   currency: string;
@@ -42,7 +33,7 @@ const {
 
 function App() {
   const { escrowContract, setTokenBalance, tokenContract, wallet } = useAztec();
-  const [orders, setOrders] = useState<Array<CreditorData>>([]);
+  const [orders, setOrders] = useState<CreditorData[]>([]);
   const [fetchingOrders, setFetchingOrders] = useState<boolean>(false);
   const [fetchingPositions, setFetchingTokenPositions] =
     useState<boolean>(true);
@@ -50,44 +41,12 @@ function App() {
   const [selectedCreditor, setSelectedCreditor] = useState<CreditorData | null>(
     null
   );
-  const [selectedTab, setSelectedTab] = useState<string>(TABS[1]);
   const [showDepositModal, setShowDepositModal] = useState<boolean>(false);
   const [showIncreaseBalanceModal, setShowIncreaseBalanceModal] =
     useState<number>(-1);
   const [showWithdrawModal, setShowWithdrawModal] = useState<number>(-1);
 
   const { message } = useWebSocket(WEBSOCKET_URL);
-
-  const formattedOrders = useMemo(() => {
-    const position = positions[0];
-    return orders.map((order) => ({
-      ...order,
-      pool:
-        order.commitment === position?.commitment ? (
-          <div className='flex items-center gap-2'>
-            <div>{new Fr(order.commitment).toShortString()}</div>
-            <div className='border border-[#904FD1] bg-[rgba(145,61,229,.5)] flex gap-1 items-center p-0.5 rounded-full text-xs'>
-              Owned
-              <CircleUserRound size={12} />
-            </div>
-          </div>
-        ) : (
-          new Fr(order.commitment).toShortString()
-        ),
-      balance: `£${formatUSDC(order.balance)}`,
-      disableAction: order.commitment === position?.commitment,
-    }));
-  }, [orders, positions]);
-
-  // TODO: Set up table component to handle different data formats insteads of mapping through array
-  const formattedPositions = useMemo(() => {
-    return positions.map((position) => ({
-      balance: `£${formatUSDC(position.balance)}`,
-      currency: position.currency,
-      withdrawable_at: position.withdrawable_at.toString(),
-      withdrawable_balance: `£${formatUSDC(position.withdrawable_balance)}`,
-    }));
-  }, [positions]);
 
   const depositFunds = async (
     sortCodeAccNum: string,
@@ -391,7 +350,6 @@ function App() {
     (async () => {
       if (!wallet) {
         setPositions([]);
-        setSelectedTab(TABS[1]);
       }
       getEscrowLiquidityPositions();
     })();
@@ -400,99 +358,16 @@ function App() {
   return (
     <div className='h-screen flex flex-col'>
       <Header />
-      <div className='flex flex-col flex-1 px-10 py-4'>
-        <div className='flex items-center justify-between'>
-          <div className='flex gap-2 text-lg mb-10'>
-            {TABS.slice(wallet && !fetchingPositions ? 0 : 1).map(
-              (tab: string) => (
-                <div
-                  className='border border-[#913DE5] cursor-pointer px-2 py-1 rounded-lg text-lg'
-                  onClick={() => setSelectedTab(tab)}
-                  style={{
-                    backgroundColor:
-                      selectedTab === tab ? '#913DE5' : 'transparent',
-                    color: selectedTab === tab ? 'white' : '#913DE5',
-                  }}
-                >
-                  {tab}
-                </div>
-              )
-            )}
-          </div>
-          {wallet && !fetchingPositions && !positions.length && (
-            <button
-              className='flex gap-2 items-center px-2 py-1'
-              onClick={() => setShowDepositModal(true)}
-            >
-              New Position <Plus size={20} />
-            </button>
-          )}
-        </div>
-        <div className='flex flex-1 justify-center'>
-          {selectedTab === TABS[0] ? (
-            positions.length ? (
-              <div className='flex flex-1 items-start'>
-                <DataTable
-                  data={formattedPositions}
-                  headers={OWNED_POSITION_HEADERS}
-                  primaryAction={{
-                    label: 'Increase',
-                    onClick: (rowIndex: number) =>
-                      setShowIncreaseBalanceModal(rowIndex),
-                  }}
-                  secondaryAction={{
-                    label: 'Withdraw',
-                    onClick: (rowIndex: number) =>
-                      setShowWithdrawModal(rowIndex),
-                  }}
-                />
-              </div>
-            ) : (
-              <div className='flex flex-1 flex-col items-center gap-4 justify-center'>
-                <div className='text-2xl'>
-                  You do not currently have any open liquidity positions
-                </div>
-                <button
-                  className='flex gap-2 items-center px-2 py-1'
-                  onClick={() => setShowDepositModal(true)}
-                >
-                  New Position <Plus size={20} />
-                </button>
-              </div>
-            )
-          ) : !wallet ? (
-            <div className='flex flex-1 flex-col gap-4 items-center justify-center'>
-              <div className='text-3xl'>Please Connect Wallet</div>
-            </div>
-          ) : fetchingOrders ? (
-            <div className='flex flex-1 flex-col gap-4 items-center justify-center'>
-              <div className='text-3xl'>Fetching Orders</div>
-              <Loader color='#913DE5' size={50} />
-            </div>
-          ) : formattedOrders.length === 0 ? (
-            <div className='flex flex-col gap-4 items-center justify-center text-3xl'>
-              No open orders
-            </div>
-          ) : (
-            <div className='flex flex-1 items-start'>
-              <DataTable
-                // @ts-ignore
-                data={formattedOrders}
-                headers={OPEN_POSITION_HEADERS}
-                primaryAction={
-                  wallet && !fetchingOrders && !fetchingPositions
-                    ? {
-                        label: 'Pay',
-                        onClick: (rowIndex: number) =>
-                          setSelectedCreditor(orders[rowIndex]),
-                      }
-                    : undefined
-                }
-              />
-            </div>
-          )}
-        </div>
-      </div>
+      <AppContent
+        fetchingOrders={fetchingOrders}
+        fetchingPositions={fetchingPositions}
+        orders={orders}
+        positions={positions}
+        setSelectedCreditor={setSelectedCreditor}
+        setShowDepositModal={setShowDepositModal}
+        setShowIncreaseBalanceModal={setShowIncreaseBalanceModal}
+        setShowWithdrawModal={setShowWithdrawModal}
+      />
       <ToastContainer position='bottom-right' theme='colored' />
       <DepositModal
         onClose={() => setShowDepositModal(false)}

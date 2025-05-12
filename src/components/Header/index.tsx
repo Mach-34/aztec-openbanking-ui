@@ -22,14 +22,18 @@ export default function Header(): JSX.Element {
     if (wallet) {
       return truncateAddress(wallet.getAddress().toString());
     } else {
-      return connectingWallet ? 'Loading Obsidion...' : 'Connect Wallet';
+      return connectingWallet ? 'Connecting Wallet...' : 'Connect Wallet';
     }
   }, [connectingWallet, wallet]);
 
   return (
     <div className='flex items-center justify-between py-5 px-10'>
       <div className='flex gap-2 items-center'>
-        <img alt='Logo' className='h-12 mr-2 w-12' src={logo} />
+        <img
+          alt='Logo'
+          className='border border-[#913DE5] h-12 mr-2 rounded w-12'
+          src={logo}
+        />
         <PXEBadge />
         {wallet && <ContractSection />}
       </div>
