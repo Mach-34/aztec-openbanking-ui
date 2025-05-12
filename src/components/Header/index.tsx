@@ -22,7 +22,7 @@ export default function Header(): JSX.Element {
     if (wallet) {
       return truncateAddress(wallet.getAddress().toString());
     } else {
-      return connectingWallet ? 'Loading Obsidion...' : 'Connect Wallet';
+      return connectingWallet ? 'Connecting Wallet...' : 'Connect Wallet';
     }
   }, [connectingWallet, wallet]);
 

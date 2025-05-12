@@ -11,6 +11,7 @@ import { formatUSDC } from '../utils';
 import { Fr } from '@aztec/aztec.js';
 import { OwnedPositions } from '../App';
 import Loader from './Loader';
+import logo from '../assets/logo.jpg';
 
 const TABS = ['Your Positions', 'Open Orders'];
 
@@ -35,7 +36,7 @@ export default function AppContent({
   setShowIncreaseBalanceModal,
   setShowWithdrawModal,
 }: AppContentProps): JSX.Element {
-  const { wallet } = useAztec();
+  const { connectWallet, connectingWallet, wallet } = useAztec();
   const [selectedTab, setSelectedTab] = useState<string>(TABS[1]);
 
   const formattedOrders = useMemo(() => {
@@ -74,6 +75,22 @@ export default function AppContent({
       setSelectedTab(TABS[1]);
     }
   }, [wallet]);
+
+  if (!wallet) {
+    return (
+      <div className='flex flex-1 flex-col gap-4 items-center justify-center'>
+        <div className='text-2xl'>Connect Wallet to Continue</div>
+        <button
+          className='flex gap-2 items-center'
+          disabled={connectingWallet}
+          onClick={() => connectWallet()}
+        >
+          {connectingWallet ? 'Connecting Wallet...' : 'Connect Wallet'}
+          {connectingWallet && <Loader size={16} />}
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className='flex flex-col flex-1 px-10 py-4'>
@@ -135,14 +152,14 @@ export default function AppContent({
               </button>
             </div>
           )
-        ) : !wallet ? (
+        ) : !fetchingOrders ? (
           <div className='flex flex-1 flex-col gap-4 items-center justify-center'>
-            <div className='text-3xl'>Please Connect Wallet</div>
-          </div>
-        ) : fetchingOrders ? (
-          <div className='flex flex-1 flex-col gap-4 items-center justify-center'>
-            <div className='text-3xl'>Fetching Orders</div>
-            <Loader color='#913DE5' size={50} />
+            <img
+              alt='Logo'
+              className='animate-pulse border border-[#913DE5] h-24 rounded w-24'
+              src={logo}
+            />
+            <div className='text-xl'>Fetching Orders</div>
           </div>
         ) : formattedOrders.length === 0 ? (
           <div className='flex flex-col gap-4 items-center justify-center text-3xl'>
