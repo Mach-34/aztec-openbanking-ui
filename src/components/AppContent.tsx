@@ -152,7 +152,7 @@ export default function AppContent({
               </button>
             </div>
           )
-        ) : !fetchingOrders ? (
+        ) : fetchingOrders ? (
           <div className='flex flex-1 flex-col gap-4 items-center justify-center'>
             <img
               alt='Logo'
