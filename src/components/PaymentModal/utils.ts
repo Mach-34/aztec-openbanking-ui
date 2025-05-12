@@ -12,7 +12,7 @@ export const prepareOpenbankingPayment = (data: CreditorData, amount: string) =>
                 },
                 CreditorAccount: {
                     SchemeName: "UK.OBIE.SortCodeAccountNumber",
-                    Identification: data.sortCode,
+                    Identification: data.sortCodeAccNum,
                     Name: "Receiver Co."
                 },
                 RemittanceInformation: {
