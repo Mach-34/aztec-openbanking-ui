@@ -480,12 +480,13 @@ function App() {
                 data={formattedOrders}
                 headers={OPEN_POSITION_HEADERS}
                 primaryAction={
-                  wallet &&
-                  !fetchingOrders && {
-                    label: 'Pay',
-                    onClick: (rowIndex: number) =>
-                      setSelectedCreditor(orders[rowIndex]),
-                  }
+                  wallet && !fetchingOrders && !fetchingPositions
+                    ? {
+                        label: 'Pay',
+                        onClick: (rowIndex: number) =>
+                          setSelectedCreditor(orders[rowIndex]),
+                      }
+                    : undefined
                 }
               />
             </div>
