@@ -14,7 +14,7 @@ export default function TokenBalanceSection() {
     fetchingTokenBalances,
     setTokenBalance,
     tokenBalance,
-    tokenContract,
+    tokenMinterContract,
     wallet,
   } = useAztec();
 
@@ -23,18 +23,17 @@ export default function TokenBalanceSection() {
   const MINT_AMOUNT = toUSDCDecimals(10n ** 7n);
 
   const mintUsdc = async () => {
-    if (!tokenContract || !wallet) return;
+    if (!tokenMinterContract || !wallet) return;
     try {
       setMinting(true);
 
-      const privateMintCall = tokenContract.methods.mint_to_private(
-        wallet.getAddress(),
+      const privateMintCall = tokenMinterContract.methods.mint_private(
         wallet.getAddress(),
         MINT_AMOUNT
       );
 
-      await tokenContract.methods
-        .mint_to_public(wallet.getAddress(), MINT_AMOUNT)
+      await tokenMinterContract.methods
+        .mint_public(wallet.getAddress(), MINT_AMOUNT)
         .send()
         .wait({ timeout: AZTEC_TX_TIMEOUT });
       await privateMintCall.send().wait({ timeout: AZTEC_TX_TIMEOUT });

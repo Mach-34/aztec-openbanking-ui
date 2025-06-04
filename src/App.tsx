@@ -67,7 +67,7 @@ function App() {
 
       // create authwit for escrow to transfer from user's private balance
       const executionPayload = await tokenContract.methods
-        .transfer_to_public(
+        .transfer_private_to_public(
           wallet.getAddress(),
           escrowContract.address,
           depositAmount,
@@ -246,7 +246,7 @@ function App() {
     const convertedDecimals = toUSDCDecimals(amount);
     try {
       const executionPayload = await tokenContract.methods
-        .transfer_to_public(
+        .transfer_private_to_public(
           wallet.getAddress(),
           escrowContract.address,
           convertedDecimals,

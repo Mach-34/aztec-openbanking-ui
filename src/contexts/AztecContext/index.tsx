@@ -14,7 +14,11 @@ import { AZTEC_WALLET_LS_KEY } from '../../utils/constants';
 import { Account, AztecWalletSdk, obsidion } from '@nemi-fi/wallet-sdk';
 import { useAccount } from '@nemi-fi/wallet-sdk/react';
 import { Contract } from '@nemi-fi/wallet-sdk/eip1193';
-import { OpenbankingEscrowContract, TokenContract } from '../../artifacts';
+import {
+  OpenbankingEscrowContract,
+  TokenContract,
+  TokenMinterContract,
+} from '../../artifacts';
 import { toast } from 'react-toastify';
 import { generateContractErrorMessage } from './helpers';
 import { DEFAULT_AZTEC_CONTEXT_PROPS, TokenBalance } from './constants';
@@ -22,6 +26,7 @@ import { DEFAULT_AZTEC_CONTEXT_PROPS, TokenBalance } from './constants';
 type OpenbankingDemoContracts = {
   escrow: Contract<OpenbankingEscrowContract>;
   token: Contract<TokenContract>;
+  tokenMinter: Contract<TokenMinterContract>;
 };
 
 type AztecContextProps = {
@@ -35,6 +40,7 @@ type AztecContextProps = {
   setTokenBalance: Dispatch<SetStateAction<TokenBalance>>;
   tokenBalance: TokenBalance;
   tokenContract: Contract<TokenContract> | undefined;
+  tokenMinterContract: Contract<TokenMinterContract> | undefined;
   wallet: Account | undefined;
 };
 
@@ -46,6 +52,7 @@ const {
   VITE_APP_ESCROW_CONTRACT_ADDRESS: ESCROW_CONTRACT_ADDRESS,
   VITE_APP_AZTEC_NODE_URL: AZTEC_NODE_URL,
   VITE_APP_TOKEN_CONTRACT_ADDRESS: TOKEN_CONTRACT_ADDRESS,
+  VITE_APP_TOKEN_MINTER_CONTRACT_ADDRESS: TOKEN_MINTER_CONTRACT_ADDRESS,
 } = import.meta.env;
 
 const aztecNode = createAztecNodeClient(AZTEC_NODE_URL);
@@ -116,6 +123,7 @@ export const AztecProvider = ({ children }: { children: ReactNode }) => {
     if (ESCROW_CONTRACT_ADDRESS && TOKEN_CONTRACT_ADDRESS && wallet) {
       const Escrow = Contract.fromAztec(OpenbankingEscrowContract);
       const Token = Contract.fromAztec(TokenContract);
+      const TokenMinter = Contract.fromAztec(TokenMinterContract);
 
       try {
         const token = await Token.at(
@@ -123,11 +131,16 @@ export const AztecProvider = ({ children }: { children: ReactNode }) => {
           wallet
         );
 
+        const tokenMinter = await TokenMinter.at(
+          AztecAddress.fromString(TOKEN_MINTER_CONTRACT_ADDRESS),
+          wallet
+        );
+
         const escrow = await Escrow.at(
           AztecAddress.fromString(ESCROW_CONTRACT_ADDRESS),
           wallet
         );
-        setContracts({ escrow, token });
+        setContracts({ escrow, token, tokenMinter });
       } catch (err: any) {
         console.log('Error: ', err);
         const message: string = err.message;
@@ -177,6 +190,7 @@ export const AztecProvider = ({ children }: { children: ReactNode }) => {
         setTokenBalance,
         tokenBalance,
         tokenContract: contracts?.token,
+        tokenMinterContract: contracts?.tokenMinter,
         wallet,
       }}
     >
