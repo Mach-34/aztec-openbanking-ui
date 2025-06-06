@@ -68,6 +68,7 @@ function App() {
       // create authwit for escrow to transfer from user's private balance
       const executionPayload = await tokenContract.methods
         .transfer_private_to_public(
+          // @ts-ignore
           wallet.getAddress(),
           escrowContract.address,
           depositAmount,
@@ -157,6 +158,7 @@ function App() {
   const getEscrowOwnerNote = useCallback(async () => {
     if (!escrowContract || !wallet) return;
     return await escrowContract.methods
+      // @ts-ignore
       .get_escrow_owner_note(wallet.getAddress())
       .simulate();
   }, [escrowContract, wallet]);
@@ -249,6 +251,7 @@ function App() {
     try {
       const executionPayload = await tokenContract.methods
         .transfer_private_to_public(
+          // @ts-ignore
           wallet.getAddress(),
           escrowContract.address,
           convertedDecimals,

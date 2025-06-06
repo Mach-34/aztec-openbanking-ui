@@ -24,8 +24,11 @@ import { generateContractErrorMessage } from './helpers';
 import { DEFAULT_AZTEC_CONTEXT_PROPS, TokenBalance } from './constants';
 
 type OpenbankingDemoContracts = {
+  // @ts-ignore
   escrow: Contract<OpenbankingEscrowContract>;
+  // @ts-ignore
   token: Contract<TokenContract>;
+  // @ts-ignore
   tokenMinter: Contract<TokenMinterContract>;
 };
 
@@ -34,12 +37,15 @@ type AztecContextProps = {
   connectWallet: () => void;
   connectingWallet: boolean;
   disconnectWallet: () => void;
+  // @ts-ignore
   escrowContract: Contract<OpenbankingEscrowContract> | undefined;
   fetchingTokenBalances: boolean;
   loadingContracts: boolean;
   setTokenBalance: Dispatch<SetStateAction<TokenBalance>>;
   tokenBalance: TokenBalance;
+  // @ts-ignore
   tokenContract: Contract<TokenContract> | undefined;
+  // @ts-ignore
   tokenMinterContract: Contract<TokenMinterContract> | undefined;
   wallet: Account | undefined;
 };
@@ -57,6 +63,7 @@ const {
 
 const aztecNode = createAztecNodeClient(AZTEC_NODE_URL);
 const walletSdk = new AztecWalletSdk({
+  // @ts-ignore
   aztecNode: aztecNode,
   connectors: [obsidion({ walletUrl: 'https://app.obsidion.xyz' })],
 });
@@ -97,14 +104,17 @@ export const AztecProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const fetchTokenBalances = useCallback(
+    // @ts-ignore
     async (token: Contract<TokenContract>) => {
       if (!wallet) return;
       try {
         setFetchingTokenBalance(true);
         const publicBalance = await token.methods
+          // @ts-ignore
           .balance_of_public(wallet.getAddress())
           .simulate();
         const privateBalance = await token.methods
+          // @ts-ignore
           .balance_of_private(wallet.getAddress())
           .simulate();
         setTokenBalance({
@@ -121,22 +131,28 @@ export const AztecProvider = ({ children }: { children: ReactNode }) => {
 
   const loadContractInstances = async () => {
     if (ESCROW_CONTRACT_ADDRESS && TOKEN_CONTRACT_ADDRESS && wallet) {
+      // @ts-ignore
       const Escrow = Contract.fromAztec(OpenbankingEscrowContract);
+      // @ts-ignore
       const Token = Contract.fromAztec(TokenContract);
+      // @ts-ignore
       const TokenMinter = Contract.fromAztec(TokenMinterContract);
 
       try {
         const token = await Token.at(
+          // @ts-ignore
           AztecAddress.fromString(TOKEN_CONTRACT_ADDRESS),
           wallet
         );
 
         const tokenMinter = await TokenMinter.at(
+          // @ts-ignore
           AztecAddress.fromString(TOKEN_MINTER_CONTRACT_ADDRESS),
           wallet
         );
 
         const escrow = await Escrow.at(
+          // @ts-ignore
           AztecAddress.fromString(ESCROW_CONTRACT_ADDRESS),
           wallet
         );

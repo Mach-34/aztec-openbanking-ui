@@ -28,11 +28,13 @@ export default function TokenBalanceSection() {
       setMinting(true);
 
       const privateMintCall = tokenMinterContract.methods.mint_private(
+        // @ts-ignore
         wallet.getAddress(),
         MINT_AMOUNT
       );
 
       await tokenMinterContract.methods
+        // @ts-ignore
         .mint_public(wallet.getAddress(), MINT_AMOUNT)
         .send()
         .wait({ timeout: AZTEC_TX_TIMEOUT });
