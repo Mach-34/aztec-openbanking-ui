@@ -10,12 +10,12 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@aztec/accounts": "=0.85.0-alpha-testnet.2",
-    "@aztec/aztec.js": "=0.85.0-alpha-testnet.2",
-    "@aztec/noir-contracts.js": "=0.85.0-alpha-testnet.2",
-    "@aztec/pxe": "=0.85.0-alpha-testnet.2",
-    "@nemi-fi/wallet-sdk": "=0.85.0-next.6",
-    "@openbanking-nr/js-inputs": "^1.0.9",
+    "@aztec/accounts": "=0.87.2",
+    "@aztec/aztec.js": "=0.87.2",
+    "@aztec/noir-contracts.js": "=0.87.2",
+    "@aztec/pxe": "=0.87.2",
+    "@nemi-fi/wallet-sdk": "=0.87.2-next.2",
+    "@openbanking-nr/js-inputs": "^1.0.10",
     "@tailwindcss/vite": "^4.0.6",
     "@types/react-modal": "^3.16.3",
     "lucide-react": "^0.475.0",

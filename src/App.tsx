@@ -67,7 +67,7 @@ function App() {
 
       // create authwit for escrow to transfer from user's private balance
       const executionPayload = await tokenContract.methods
-        .transfer_to_public(
+        .transfer_private_to_public(
           wallet.getAddress(),
           escrowContract.address,
           depositAmount,
@@ -188,15 +188,16 @@ function App() {
 
       // filter out nonexistent balances
       const formatted = escrowBalances
-        .filter((balance) => balance.balance.initialized)
+        .filter((balance) => balance.balance._is_some)
         .map((balance: any) => {
           return {
-            balance: balance.balance.balance,
+            balance: balance.balance._value.balance,
             commitment: balance.commitment,
             currency: CurrencyCode.GBP,
             sortCodeAccNum: balance.sortCode,
           };
         });
+
       setOrders(formatted);
     } catch (err) {
       console.log('Error: ', err);
@@ -218,24 +219,25 @@ function App() {
           .get_escrow_liqudity_position(commitment)
           .simulate();
 
-        if (commitmentBalance.initialized) {
+        if (commitmentBalance._is_some) {
           // format position data for table
           setPositions([
             {
               // @ts-ignore
-              balance: commitmentBalance.balance,
+              balance: commitmentBalance._value.balance,
               commitment: commitment,
               currency: CurrencyCode.GBP,
               // @ts-ignore
-              withdrawable_at: commitmentBalance.withdrawable_at,
+              withdrawable_at: commitmentBalance._value.withdrawable_at,
               withdrawable_balance:
                 // @ts-ignore
-                commitmentBalance.withdrawable_balance,
+                commitmentBalance._value.withdrawable_balance,
             },
           ]);
         }
       }
-    } catch {
+    } catch (err) {
+      console.log('Error test: ', err);
     } finally {
       setFetchingTokenPositions(false);
     }
@@ -246,7 +248,7 @@ function App() {
     const convertedDecimals = toUSDCDecimals(amount);
     try {
       const executionPayload = await tokenContract.methods
-        .transfer_to_public(
+        .transfer_private_to_public(
           wallet.getAddress(),
           escrowContract.address,
           convertedDecimals,
@@ -348,12 +350,14 @@ function App() {
 
   useEffect(() => {
     (async () => {
-      if (!wallet) {
+      if (fetchingOrders || !wallet) {
         setPositions([]);
+        setFetchingTokenPositions(false);
+      } else {
+        getEscrowLiquidityPositions();
       }
-      getEscrowLiquidityPositions();
     })();
-  }, [getEscrowLiquidityPositions, getOrders, wallet]);
+  }, [fetchingOrders, getEscrowLiquidityPositions, getOrders, wallet]);
 
   return (
     <div className='h-screen flex flex-col'>

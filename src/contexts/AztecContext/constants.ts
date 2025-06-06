@@ -16,5 +16,6 @@ export const DEFAULT_AZTEC_CONTEXT_PROPS = {
     setTokenBalance: (() => { }) as Dispatch<SetStateAction<TokenBalance>>,
     tokenBalance: { private: 0n, public: 0n },
     tokenContract: undefined,
+    tokenMinterContract: undefined,
     wallet: undefined,
 };
