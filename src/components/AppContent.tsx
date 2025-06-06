@@ -36,7 +36,8 @@ export default function AppContent({
   setShowIncreaseBalanceModal,
   setShowWithdrawModal,
 }: AppContentProps) {
-  const { connectWallet, connectingWallet, wallet } = useAztec();
+  const { connectWallet, connectingWallet, fetchingTokenBalances, wallet } =
+    useAztec();
   const [selectedTab, setSelectedTab] = useState<string>(TABS[1]);
 
   const formattedOrders = useMemo(() => {
@@ -96,21 +97,26 @@ export default function AppContent({
     <div className='flex flex-col flex-1 px-10 py-4'>
       <div className='flex items-center justify-between'>
         <div className='flex gap-2 text-lg mb-10'>
-          {TABS.slice(wallet && !fetchingPositions ? 0 : 1).map(
-            (tab: string) => (
-              <div
-                className='border border-[#913DE5] cursor-pointer px-2 py-1 rounded-lg text-lg'
-                onClick={() => setSelectedTab(tab)}
-                style={{
-                  backgroundColor:
-                    selectedTab === tab ? '#913DE5' : 'transparent',
-                  color: selectedTab === tab ? 'white' : '#913DE5',
-                }}
-              >
-                {tab}
-              </div>
-            )
-          )}
+          {TABS.slice(!fetchingTokenBalances ? 0 : 1).map((tab: string) => (
+            <div
+              className='border border-[#913DE5] cursor-pointer px-2 py-1 rounded-lg text-lg'
+              onClick={() => !fetchingPositions && setSelectedTab(tab)}
+              style={{
+                backgroundColor:
+                  selectedTab === tab ? '#913DE5' : 'transparent',
+                color: selectedTab === tab ? 'white' : '#913DE5',
+              }}
+            >
+              {fetchingPositions && tab === TABS[0] ? (
+                <div className='flex gap-2 items-center'>
+                  <div>Checking for positions...</div>
+                  <Loader size={16} />
+                </div>
+              ) : (
+                <>{tab}</>
+              )}
+            </div>
+          ))}
         </div>
         {wallet && !fetchingPositions && !positions.length && (
           <button
