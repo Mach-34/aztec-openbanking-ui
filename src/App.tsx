@@ -213,7 +213,7 @@ function App() {
     if (!escrowContract || !wallet) return;
     try {
       const escrowOwnerNote: any = await getEscrowOwnerNote();
-
+      console.log('Escrow owner note: ', escrowOwnerNote);
       if (escrowOwnerNote._is_some) {
         const commitment: bigint = escrowOwnerNote._value.commitment;
 
@@ -353,10 +353,9 @@ function App() {
 
   useEffect(() => {
     (async () => {
-      if (fetchingOrders || !wallet) {
-        setPositions([]);
-        setFetchingTokenPositions(false);
-      } else {
+      if (!fetchingOrders && wallet) {
+        console.log('Wallet', wallet);
+        console.log('Fetching orders: ', fetchingOrders);
         getEscrowLiquidityPositions();
       }
     })();
