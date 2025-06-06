@@ -32,7 +32,13 @@ const {
 } = import.meta.env;
 
 function App() {
-  const { escrowContract, setTokenBalance, tokenContract, wallet } = useAztec();
+  const {
+    escrowContract,
+    fetchingTokenBalances,
+    setTokenBalance,
+    tokenContract,
+    wallet,
+  } = useAztec();
   const [orders, setOrders] = useState<CreditorData[]>([]);
   const [fetchingOrders, setFetchingOrders] = useState<boolean>(false);
   const [fetchingPositions, setFetchingTokenPositions] =
@@ -213,7 +219,6 @@ function App() {
     if (!escrowContract || !wallet) return;
     try {
       const escrowOwnerNote: any = await getEscrowOwnerNote();
-
       if (escrowOwnerNote._is_some) {
         const commitment: bigint = escrowOwnerNote._value.commitment;
 
@@ -353,14 +358,11 @@ function App() {
 
   useEffect(() => {
     (async () => {
-      if (fetchingOrders || !wallet) {
-        setPositions([]);
-        setFetchingTokenPositions(false);
-      } else {
+      if (!fetchingTokenBalances && wallet) {
         getEscrowLiquidityPositions();
       }
     })();
-  }, [fetchingOrders, getEscrowLiquidityPositions, getOrders, wallet]);
+  }, [fetchingTokenBalances, getEscrowLiquidityPositions, wallet]);
 
   return (
     <div className='h-screen flex flex-col'>
