@@ -29,7 +29,7 @@ type OpenbankingDemoContracts = {
   // @ts-ignore
   token: Contract<TokenContract>;
   // @ts-ignore
-  tokenMinter: Contract<TokenMinterContract>;
+  tokenMinter: Contract<TokenMinterContract> | undefined;
 };
 
 type AztecContextProps = {
@@ -57,6 +57,7 @@ const AztecContext = createContext<AztecContextProps>(
 const {
   VITE_APP_ESCROW_CONTRACT_ADDRESS: ESCROW_CONTRACT_ADDRESS,
   VITE_APP_AZTEC_NODE_URL: AZTEC_NODE_URL,
+  VITE_APP_IS_AZTEC_TESTNET: IS_AZTEC_TESTNET,
   VITE_APP_TOKEN_CONTRACT_ADDRESS: TOKEN_CONTRACT_ADDRESS,
   VITE_APP_TOKEN_MINTER_CONTRACT_ADDRESS: TOKEN_MINTER_CONTRACT_ADDRESS,
 } = import.meta.env;
@@ -145,17 +146,22 @@ export const AztecProvider = ({ children }: { children: ReactNode }) => {
           wallet
         );
 
-        const tokenMinter = await TokenMinter.at(
-          // @ts-ignore
-          AztecAddress.fromString(TOKEN_MINTER_CONTRACT_ADDRESS),
-          wallet
-        );
-
         const escrow = await Escrow.at(
           // @ts-ignore
           AztecAddress.fromString(ESCROW_CONTRACT_ADDRESS),
           wallet
         );
+
+        let tokenMinter: Contract<any> | undefined = undefined;
+
+        if (!IS_AZTEC_TESTNET) {
+          tokenMinter = await TokenMinter.at(
+            // @ts-ignore
+            AztecAddress.fromString(TOKEN_MINTER_CONTRACT_ADDRESS),
+            wallet
+          );
+        }
+
         setContracts({ escrow, token, tokenMinter });
       } catch (err: any) {
         console.log('Error: ', err);
